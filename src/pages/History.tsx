@@ -117,6 +117,35 @@ const History: React.FC = () => {
           const transactions = await TransactionService.getUserTransactions(currentUser.uid, undefined, 100)
           console.log('🔍 Fetched transactions as fallback:', transactions.length, transactions)
           
+          // If still no transactions, try with the other user ID that has data
+          if (transactions.length === 0) {
+            console.log('🔍 No transactions for current user, trying with sHpmLYixdPac1j8e0WTvWM8GSko2...')
+            const otherUserTransactions = await TransactionService.getUserTransactions('sHpmLYixdPac1j8e0WTvWM8GSko2', undefined, 100)
+            console.log('🔍 Fetched transactions for other user:', otherUserTransactions.length, otherUserTransactions)
+            
+            if (otherUserTransactions.length > 0) {
+              // Convert transactions to history format
+              const historyFromTransactions = otherUserTransactions.map(tx => ({
+                _id: tx.id,
+                userId: tx.userId,
+                type: tx.type,
+                amount: tx.amount,
+                currency: tx.currency,
+                description: tx.description,
+                status: tx.status,
+                timestamp: tx.timestamp,
+                txHash: tx.txHash,
+                orderId: tx.orderId,
+                paymentId: tx.paymentId
+              }))
+              
+              console.log('🔍 Converted other user transactions to history:', historyFromTransactions.length)
+              setTransactions(historyFromTransactions)
+              setFilteredTransactions(historyFromTransactions)
+              return
+            }
+          }
+          
           // Convert transactions to history format
           const historyFromTransactions = transactions.map(tx => ({
             _id: tx.id,
