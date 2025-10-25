@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (import.meta.env.PROD ? 'https://crypto-exchange-api-server.vercel.app/api' : 'http://localhost:5000/api');
+  (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 
 export interface User {
   _id?: string;
