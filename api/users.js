@@ -4,6 +4,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'f
 const firebaseConfig = {
   apiKey: "AIzaSyDAVopTBDSikDCHqEnljBMfk6ml-rewiSE",
   authDomain: "cryptopay-e04c3.firebaseapp.com",
+  databaseURL: "https://cryptopay-e04c3-default-rtdb.firebaseio.com",
   projectId: "cryptopay-e04c3",
   storageBucket: "cryptopay-e04c3.firebasestorage.app",
   messagingSenderId: "935827653972",

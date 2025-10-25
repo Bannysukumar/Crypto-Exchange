@@ -4,6 +4,7 @@ import { getFirestore, collection, query, where, orderBy, limit, getDocs, addDoc
 const firebaseConfig = {
   apiKey: "AIzaSyDAVopTBDSikDCHqEnljBMfk6ml-rewiSE",
   authDomain: "cryptopay-e04c3.firebaseapp.com",
+  databaseURL: "https://cryptopay-e04c3-default-rtdb.firebaseio.com",
   projectId: "cryptopay-e04c3",
   storageBucket: "cryptopay-e04c3.firebasestorage.app",
   messagingSenderId: "935827653972",
