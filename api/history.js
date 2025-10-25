@@ -91,6 +91,36 @@ export default async function handler(req, res) {
         limit: limitNum
       });
       
+      // First, let's check if there's any data in the history collection at all
+      console.log('🔍 Checking if history collection has any data...');
+      const allHistoryQuery = query(collection(db, 'history'));
+      const allHistorySnapshot = await getDocs(allHistoryQuery);
+      console.log('🔍 Total documents in history collection:', allHistorySnapshot.size);
+      
+      if (allHistorySnapshot.size > 0) {
+        console.log('🔍 Sample history documents:');
+        allHistorySnapshot.forEach((doc, index) => {
+          if (index < 3) { // Show first 3 documents
+            console.log(`🔍 Document ${index}:`, doc.id, doc.data());
+          }
+        });
+      }
+      
+      // Also check transactions collection
+      console.log('🔍 Checking transactions collection...');
+      const allTransactionsQuery = query(collection(db, 'transactions'));
+      const allTransactionsSnapshot = await getDocs(allTransactionsQuery);
+      console.log('🔍 Total documents in transactions collection:', allTransactionsSnapshot.size);
+      
+      if (allTransactionsSnapshot.size > 0) {
+        console.log('🔍 Sample transaction documents:');
+        allTransactionsSnapshot.forEach((doc, index) => {
+          if (index < 3) { // Show first 3 documents
+            console.log(`🔍 Transaction ${index}:`, doc.id, doc.data());
+          }
+        });
+      }
+      
       const querySnapshot = await getDocs(historyQuery);
       console.log('🔍 Query snapshot size:', querySnapshot.size);
       console.log('🔍 Query snapshot empty:', querySnapshot.empty);
@@ -110,6 +140,35 @@ export default async function handler(req, res) {
       
       console.log('✅ Found history entries in Firestore:', history.length);
       console.log('✅ History entries:', history);
+      
+      // If no history found, try to get from transactions collection as fallback
+      if (history.length === 0) {
+        console.log('🔍 No history found, checking transactions collection as fallback...');
+        const transactionsQuery = query(
+          collection(db, 'transactions'),
+          where('userId', '==', userId),
+          orderBy('timestamp', 'desc')
+        );
+        
+        const transactionsSnapshot = await getDocs(transactionsQuery);
+        console.log('🔍 Transactions snapshot size:', transactionsSnapshot.size);
+        
+        const fallbackHistory = [];
+        transactionsSnapshot.forEach((doc) => {
+          console.log('🔍 Processing transaction document for history:', doc.id, doc.data());
+          const docData = doc.data();
+          fallbackHistory.push({
+            _id: doc.id,
+            ...docData,
+            timestamp: docData.timestamp?.toDate ? docData.timestamp.toDate() : docData.timestamp
+          });
+        });
+        
+        console.log('✅ Found fallback history from transactions:', fallbackHistory.length);
+        res.status(200).json(fallbackHistory);
+        return;
+      }
+      
       res.status(200).json(history);
     } else if (req.method === 'POST') {
       console.log('🔧 Creating history entry in Firestore');
