@@ -1,25 +1,26 @@
-import { MongoClient } from 'mongodb';
+// Temporarily disable MongoDB to test basic API functionality
+// import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = 'mongodb+srv://donvaibhav21:<StX7LTcANb9G5NxI>@cluster0.dmd7ds0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-const DB_NAME = 'CyrptopayDB';
+// const MONGODB_URI = 'mongodb+srv://donvaibhav21:<StX7LTcANb9G5NxI>@cluster0.dmd7ds0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+// const DB_NAME = 'CyrptopayDB';
 
-let cachedClient = null;
-let cachedDb = null;
+// let cachedClient = null;
+// let cachedDb = null;
 
-async function connectToDatabase() {
-  if (cachedClient && cachedDb) {
-    return { client: cachedClient, db: cachedDb };
-  }
+// async function connectToDatabase() {
+//   if (cachedClient && cachedDb) {
+//     return { client: cachedClient, db: cachedDb };
+//   }
 
-  const client = new MongoClient(MONGODB_URI);
-  await client.connect();
-  const db = client.db(DB_NAME);
+//   const client = new MongoClient(MONGODB_URI);
+//   await client.connect();
+//   const db = client.db(DB_NAME);
 
-  cachedClient = client;
-  cachedDb = db;
+//   cachedClient = client;
+//   cachedDb = db;
 
-  return { client, db };
-}
+//   return { client, db };
+// }
 
 export default async function handler(req, res) {
   console.log('API Users endpoint called:', req.method, req.url, req.query);
@@ -45,45 +46,45 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    console.log('Connecting to database...');
-    const { db } = await connectToDatabase();
-    console.log('Database connected successfully');
-    
-    const users = db.collection('users');
-    console.log('Users collection accessed');
+    console.log('Processing request without database connection...');
     
     if (req.method === 'GET') {
       console.log('Fetching user with UID:', uid);
-      const user = await users.findOne({ uid });
-      console.log('User found:', user ? 'Yes' : 'No');
       
-      if (!user) {
-        console.log('User not found, returning 404');
-        return res.status(404).json({ error: 'User not found' });
-      }
+      // Return mock user data for testing
+      const mockUser = {
+        _id: 'mock_id_' + uid,
+        uid: uid,
+        email: 'test@example.com',
+        displayName: 'Test User',
+        name: 'Test User',
+        phone: '+1234567890',
+        inrBalance: 1000,
+        cryptoBalances: {
+          BTC: 0.001,
+          USDT: 100,
+          BXC: 50
+        },
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
       
-      console.log('Returning user data');
-      res.status(200).json(user);
+      console.log('Returning mock user data');
+      res.status(200).json(mockUser);
     } else if (req.method === 'POST') {
       console.log('Creating/updating user');
       const userData = req.body;
       
-      const result = await users.findOneAndUpdate(
-        { uid: userData.uid },
-        { 
-          $set: { 
-            ...userData,
-            updatedAt: new Date()
-          }
-        },
-        { 
-          upsert: true, 
-          returnDocument: 'after' 
-        }
-      );
+      // Return the user data with mock ID
+      const result = {
+        ...userData,
+        _id: 'mock_id_' + userData.uid,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
       
       console.log('User created/updated successfully');
-      res.status(200).json(result.value);
+      res.status(200).json(result);
     } else {
       res.setHeader('Allow', ['GET', 'POST']);
       res.status(405).end(`Method ${req.method} Not Allowed`);
