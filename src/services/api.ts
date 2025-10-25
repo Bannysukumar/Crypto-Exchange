@@ -59,7 +59,18 @@ class ApiService {
 
   // User operations
   async getUser(uid: string): Promise<User | null> {
-    return this.request<User | null>(`/users?uid=${uid}`);
+    try {
+      return await this.request<User | null>(`/users?uid=${uid}`);
+    } catch (error: any) {
+      if (error.message.includes('404')) {
+        console.log('User not found, API will create user automatically');
+        // Wait a moment for the API to create the user
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Try again
+        return await this.request<User | null>(`/users?uid=${uid}`);
+      }
+      throw error;
+    }
   }
 
   async createUser(userData: Omit<User, '_id' | 'createdAt' | 'updatedAt'>): Promise<User> {

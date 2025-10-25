@@ -38,7 +38,15 @@ export class MongoDBService {
   }
 
   async getUserByUid(uid: string): Promise<User | null> {
-    return await apiService.getUser(uid)
+    try {
+      return await apiService.getUser(uid)
+    } catch (error) {
+      console.error('Error fetching user:', error)
+      // If user doesn't exist, the API will create them automatically
+      // Try again after a short delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      return await apiService.getUser(uid)
+    }
   }
 
   async updateUser(uid: string, updates: Partial<User>): Promise<void> {

@@ -48,8 +48,33 @@ export default async function handler(req, res) {
       const userSnap = await getDoc(userRef);
       
       if (!userSnap.exists()) {
-        console.log('User not found in Firestore');
-        return res.status(404).json({ error: 'User not found' });
+        console.log('User not found in Firestore, creating new user...');
+        
+        // Create a new user with default values
+        const defaultUserData = {
+          uid: uid,
+          email: 'user@example.com',
+          displayName: 'New User',
+          name: 'New User',
+          phone: '',
+          inrBalance: 0,
+          cryptoBalances: {
+            BTC: 0,
+            USDT: 0,
+            BXC: 0
+          },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+        
+        await setDoc(userRef, defaultUserData);
+        console.log('New user created in Firestore');
+        
+        res.status(200).json({
+          _id: uid,
+          ...defaultUserData
+        });
+        return;
       }
       
       const userData = userSnap.data();
