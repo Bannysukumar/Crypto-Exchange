@@ -136,6 +136,27 @@ class ApiService {
     return this.request<User | null>(`/users?email=${encodeURIComponent(email)}`);
   }
 
+  // History operations
+  async getUserHistory(
+    userId: string,
+    type?: string,
+    limit: number = 50
+  ): Promise<Transaction[]> {
+    const params = new URLSearchParams();
+    params.append('userId', userId);
+    if (type) params.append('type', type);
+    params.append('limit', limit.toString());
+    
+    return this.request<Transaction[]>(`/history?${params}`);
+  }
+
+  async createHistoryEntry(historyData: Omit<Transaction, '_id' | 'timestamp'>): Promise<Transaction> {
+    return this.request<Transaction>('/history', {
+      method: 'POST',
+      body: JSON.stringify(historyData),
+    });
+  }
+
   // Health check
   async healthCheck(): Promise<{ status: string; message: string }> {
     return this.request<{ status: string; message: string }>('/health');

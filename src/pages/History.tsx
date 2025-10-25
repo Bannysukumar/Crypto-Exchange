@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { TransactionService, Transaction } from '../services/transactions'
+import { HistoryService, HistoryEntry } from '../services/history'
 import toast from 'react-hot-toast'
 
 const History: React.FC = () => {
@@ -26,34 +27,34 @@ const History: React.FC = () => {
       return
     }
     
-    console.log('🔍 History page - Loading transactions for user:', currentUser.uid)
+    console.log('🔍 History page - Loading history for user:', currentUser.uid)
     setLoading(true)
     
     try {
-      console.log('🔍 Calling TransactionService.getUserTransactions...')
-      const fetchedTransactions = await TransactionService.getUserTransactions(currentUser.uid, undefined, 100)
-      console.log('🔍 Fetched transactions:', fetchedTransactions.length, fetchedTransactions)
+      console.log('🔍 Calling HistoryService.getUserHistory...')
+      const fetchedHistory = await HistoryService.getUserHistory(currentUser.uid, undefined, 100)
+      console.log('🔍 Fetched history:', fetchedHistory.length, fetchedHistory)
       
-      // Debug: Log each transaction's details
-      fetchedTransactions.forEach((tx, index) => {
-        console.log(`🔍 Transaction ${index}:`, {
-          id: tx.id,
-          type: tx.type,
-          amount: tx.amount,
-          currency: tx.currency,
-          description: tx.description,
-          status: tx.status,
-          timestamp: tx.timestamp
+      // Debug: Log each history entry's details
+      fetchedHistory.forEach((entry, index) => {
+        console.log(`🔍 History entry ${index}:`, {
+          id: entry._id,
+          type: entry.type,
+          amount: entry.amount,
+          currency: entry.currency,
+          description: entry.description,
+          status: entry.status,
+          timestamp: entry.timestamp
         })
       })
       
-      setTransactions(fetchedTransactions)
-      setFilteredTransactions(fetchedTransactions)
+      setTransactions(fetchedHistory)
+      setFilteredTransactions(fetchedHistory)
       
-      console.log('🔍 Transactions set in state:', fetchedTransactions.length)
+      console.log('🔍 History entries set in state:', fetchedHistory.length)
     } catch (error) {
-      console.error('❌ Error loading transactions:', error)
-      toast.error('Error loading transactions')
+      console.error('❌ Error loading history:', error)
+      toast.error('Error loading history')
       setTransactions([])
       setFilteredTransactions([])
     } finally {
