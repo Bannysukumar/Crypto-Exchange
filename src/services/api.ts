@@ -49,16 +49,26 @@ class ApiService {
       ...options,
     };
 
+    console.log(`🔍 Making API request to: ${url}`);
+    console.log(`🔍 Request options:`, config);
+    
     try {
       const response = await fetch(url, config);
       
+      console.log(`🔍 Response status: ${response.status}`);
+      console.log(`🔍 Response headers:`, Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ API request failed for ${url}:`, errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log(`✅ API request successful for ${url}:`, data);
+      return data;
     } catch (error) {
-      console.error(`API request failed for ${endpoint}:`, error);
+      console.error(`❌ API request error for ${url}:`, error);
       throw error;
     }
   }

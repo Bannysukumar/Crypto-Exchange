@@ -63,7 +63,15 @@ export class FirebaseService {
     type?: string,
     limit: number = 50
   ): Promise<Transaction[]> {
-    return await apiService.getUserTransactions(userId, type, limit)
+    console.log(`🔍 FirebaseService.getUserTransactions called with:`, { userId, type, limit })
+    try {
+      const result = await apiService.getUserTransactions(userId, type, limit)
+      console.log(`✅ FirebaseService.getUserTransactions result:`, result)
+      return result
+    } catch (error) {
+      console.error(`❌ FirebaseService.getUserTransactions error:`, error)
+      throw error
+    }
   }
 
   async createTransaction(transactionData: Omit<Transaction, '_id' | 'timestamp'>): Promise<Transaction> {
