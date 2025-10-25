@@ -31,7 +31,7 @@ export const CASHFREE_CONFIG = {
   },
   
   // Current environment (change to 'production' when going live)
-  currentEnvironment: 'sandbox' as 'demo' | 'sandbox' | 'production',
+  currentEnvironment: 'demo' as 'demo' | 'sandbox' | 'production',
   
   // Get current config based on environment
   getCurrentConfig() {
