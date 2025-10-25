@@ -89,7 +89,7 @@ const Profile: React.FC = () => {
         })
       }
 
-      // Update MongoDB profile using AuthContext
+      // Update Firebase profile using AuthContext
       await updateUserProfile({
         displayName: profileData.displayName,
         name: profileData.name,
