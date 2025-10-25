@@ -44,7 +44,9 @@ export default function handler(req, res) {
     console.log('Order status retrieved:', mockStatus);
     res.status(200).json({
       success: true,
-      order: mockStatus
+      order: mockStatus,
+      status: 'PAID',  // Add status at top level for compatibility
+      order_status: 'PAID'  // Add order_status at top level for compatibility
     });
   } else {
     res.setHeader('Allow', ['GET']);

@@ -533,8 +533,15 @@ export class CashfreeManager {
         try {
           const orderStatus = await this.checkOrderStatus(orderDetails.order_id)
           console.log('Delayed order status check:', orderStatus)
+          console.log('Order status keys:', Object.keys(orderStatus || {}))
+          console.log('Order status order_status:', orderStatus?.order_status)
+          console.log('Order status status:', orderStatus?.status)
+          console.log('Order status order:', orderStatus?.order)
+          console.log('Order status order keys:', Object.keys(orderStatus?.order || {}))
+          console.log('Order status order status:', orderStatus?.order?.status)
+          console.log('Order status order order_status:', orderStatus?.order?.order_status)
           
-          if (orderStatus && (orderStatus.order_status === 'PAID' || orderStatus.status === 'PAID')) {
+          if (orderStatus && (orderStatus.order_status === 'PAID' || orderStatus.status === 'PAID' || orderStatus.order?.status === 'PAID' || orderStatus.order?.order_status === 'PAID')) {
             console.log('Payment confirmed by delayed status check!')
             toast.dismiss('payment-toast')
             toast.success('Payment successful! Balance updated.')
