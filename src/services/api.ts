@@ -133,7 +133,7 @@ class ApiService {
 
   // Find user by email
   async findUserByEmail(email: string): Promise<User | null> {
-    return this.request<User | null>(`/users/email/${encodeURIComponent(email)}`);
+    return this.request<User | null>(`/users?email=${encodeURIComponent(email)}`);
   }
 
   // Health check

@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDAVopTBDSikDCHqEnljBMfk6ml-rewiSE",
@@ -32,12 +32,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { uid } = req.query;
+    const { uid, email } = req.query;
     console.log('User ID from query:', uid);
+    console.log('Email from query:', email);
     
-    if (!uid) {
-      console.log('No UID provided');
-      return res.status(400).json({ error: 'User ID is required' });
+    if (!uid && !email) {
+      console.log('No UID or email provided');
+      return res.status(400).json({ error: 'User ID or email is required' });
     }
 
     console.log('Connecting to Firebase Firestore...');
@@ -45,54 +46,88 @@ export default async function handler(req, res) {
     console.log('Database instance:', db);
     
     if (req.method === 'GET') {
-      console.log('Fetching user with UID:', uid);
-      
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (!userSnap.exists()) {
-        console.log('User not found in Firestore, creating new user...');
-        
-        // Create a new user with default values
-        const defaultUserData = {
-          uid: uid,
-          email: 'user@example.com',
-          displayName: 'New User',
-          name: 'New User',
-          phone: '',
-          inrBalance: 0,
-          cryptoBalances: {
-            BTC: 0,
-            USDT: 0,
-            BXC: 0
-          },
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
+      if (email) {
+        // Handle email lookup
+        console.log('Looking up user by email:', email);
         
         try {
-          await setDoc(userRef, defaultUserData);
-          console.log('New user created in Firestore');
-        } catch (firebaseError) {
-          console.error('Error creating user in Firestore:', firebaseError);
-          // Return the user data anyway so the app doesn't break
-          console.log('Returning user data despite Firebase error');
+          // Query users collection by email
+          const usersRef = collection(db, 'users');
+          const q = query(usersRef, where('email', '==', email));
+          const querySnapshot = await getDocs(q);
+          
+          if (querySnapshot.empty) {
+            console.log('No user found with email:', email);
+            return res.status(404).json({ error: 'User not found' });
+          }
+          
+          // Get the first matching user
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          
+          console.log('User found by email:', userData);
+          
+          res.status(200).json({
+            _id: userDoc.id,
+            ...userData
+          });
+        } catch (error) {
+          console.error('Error looking up user by email:', error);
+          return res.status(500).json({ error: 'Error looking up user by email' });
         }
+      } else if (uid) {
+        // Handle UID lookup
+        console.log('Fetching user with UID:', uid);
+        
+        const userRef = doc(db, 'users', uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (!userSnap.exists()) {
+          console.log('User not found in Firestore, creating new user...');
+          
+          // Create a new user with default values
+          const defaultUserData = {
+            uid: uid,
+            email: 'user@example.com',
+            displayName: 'New User',
+            name: 'New User',
+            phone: '',
+            inrBalance: 0,
+            cryptoBalances: {
+              BTC: 0,
+              USDT: 0,
+              BXC: 0
+            },
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+          
+          try {
+            await setDoc(userRef, defaultUserData);
+            console.log('New user created in Firestore');
+          } catch (firebaseError) {
+            console.error('Error creating user in Firestore:', firebaseError);
+            // Return the user data anyway so the app doesn't break
+            console.log('Returning user data despite Firebase error');
+          }
+          
+          res.status(200).json({
+            _id: uid,
+            ...defaultUserData
+          });
+          return;
+        }
+        
+        const userData = userSnap.data();
+        console.log('User found in Firestore:', userData);
         
         res.status(200).json({
           _id: uid,
-          ...defaultUserData
+          ...userData
         });
-        return;
+      } else {
+        return res.status(400).json({ error: 'Either UID or email is required' });
       }
-      
-      const userData = userSnap.data();
-      console.log('User found in Firestore:', userData);
-      
-      res.status(200).json({
-        _id: uid,
-        ...userData
-      });
     } else if (req.method === 'POST') {
       console.log('Creating/updating user in Firestore');
       const userData = req.body;
