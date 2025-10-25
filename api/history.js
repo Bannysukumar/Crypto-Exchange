@@ -54,23 +54,6 @@ export default async function handler(req, res) {
         });
       }
       
-      // Temporary fix - return mock data to test if API is working
-      if (userId === 'sHpmLYixdPac1j8e0WTvWM8GSko2') {
-        console.log('🔍 Returning mock data for testing');
-        const mockData = [
-          {
-            _id: 'test1',
-            userId: 'sHpmLYixdPac1j8e0WTvWM8GSko2',
-            type: 'send',
-            amount: -10,
-            currency: 'BXC',
-            description: 'Sent 10 BXC to jdthiuhguhu@gmail.com',
-            status: 'completed',
-            timestamp: new Date()
-          }
-        ];
-        return res.status(200).json(mockData);
-      }
       
       if (!userId) {
         console.log('❌ No userId provided');
@@ -101,6 +84,13 @@ export default async function handler(req, res) {
       }
       
       console.log('🔍 Executing Firestore query...');
+      console.log('🔍 Query details:', {
+        collection: 'history',
+        userId: userId,
+        type: type,
+        limit: limitNum
+      });
+      
       const querySnapshot = await getDocs(historyQuery);
       console.log('🔍 Query snapshot size:', querySnapshot.size);
       console.log('🔍 Query snapshot empty:', querySnapshot.empty);
@@ -109,9 +99,12 @@ export default async function handler(req, res) {
       
       querySnapshot.forEach((doc) => {
         console.log('🔍 Processing history document:', doc.id, doc.data());
+        const docData = doc.data();
         history.push({
           _id: doc.id,
-          ...doc.data()
+          ...docData,
+          // Ensure timestamp is properly formatted
+          timestamp: docData.timestamp?.toDate ? docData.timestamp.toDate() : docData.timestamp
         });
       });
       
