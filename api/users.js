@@ -135,11 +135,50 @@ export default async function handler(req, res) {
       const userRef = doc(db, 'users', uid);
       
       try {
-        await updateDoc(userRef, {
-          ...userData,
-          updatedAt: serverTimestamp()
-        });
-        console.log('User updated in Firestore');
+        // Check if this is a balance update (has currency and amount)
+        if (userData.currency && userData.amount !== undefined) {
+          console.log(`Updating ${userData.currency} balance by ${userData.amount}`);
+          
+          // Get current user data
+          const userSnap = await getDoc(userRef);
+          if (!userSnap.exists()) {
+            console.error('User not found for balance update');
+            return res.status(404).json({ error: 'User not found' });
+          }
+          
+          const currentUserData = userSnap.data();
+          
+          // Update the specific balance
+          if (userData.currency === 'INR') {
+            const newInrBalance = (currentUserData.inrBalance || 0) + userData.amount;
+            await updateDoc(userRef, {
+              inrBalance: newInrBalance,
+              updatedAt: serverTimestamp()
+            });
+            console.log(`INR balance updated: ${currentUserData.inrBalance || 0} + ${userData.amount} = ${newInrBalance}`);
+          } else if (userData.currency === 'BTC' || userData.currency === 'USDT' || userData.currency === 'BXC') {
+            const currentBalances = currentUserData.cryptoBalances || { BTC: 0, USDT: 0, BXC: 0 };
+            const newBalances = {
+              ...currentBalances,
+              [userData.currency]: (currentBalances[userData.currency] || 0) + userData.amount
+            };
+            await updateDoc(userRef, {
+              cryptoBalances: newBalances,
+              updatedAt: serverTimestamp()
+            });
+            console.log(`${userData.currency} balance updated: ${currentBalances[userData.currency] || 0} + ${userData.amount} = ${newBalances[userData.currency]}`);
+          } else {
+            console.error('Invalid currency for balance update:', userData.currency);
+            return res.status(400).json({ error: 'Invalid currency' });
+          }
+        } else {
+          // Regular user update
+          await updateDoc(userRef, {
+            ...userData,
+            updatedAt: serverTimestamp()
+          });
+          console.log('User updated in Firestore');
+        }
         
         // Get the updated user data
         const updatedUserSnap = await getDoc(userRef);
