@@ -30,14 +30,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('History API called:', req.method, req.url, req.query);
+    console.log('🔍 History API called:', req.method, req.url, req.query);
+    console.log('🔍 Request body:', req.body);
+    console.log('🔍 Request headers:', req.headers);
     
     if (req.method === 'GET') {
       const { userId, type, limit } = req.query;
       
-      console.log('Fetching history from Firestore for user:', userId, 'type:', type, 'limit:', limit);
+      console.log('🔍 Fetching history from Firestore for user:', userId, 'type:', type, 'limit:', limit);
+      console.log('🔍 Firebase config:', firebaseConfig);
+      console.log('🔍 Database instance:', db);
       
       if (!userId) {
+        console.log('❌ No userId provided');
         return res.status(400).json({ error: 'User ID is required' });
       }
       
@@ -64,17 +69,23 @@ export default async function handler(req, res) {
         historyQuery = query(historyQuery, limit(limitNum));
       }
       
+      console.log('🔍 Executing Firestore query...');
       const querySnapshot = await getDocs(historyQuery);
+      console.log('🔍 Query snapshot size:', querySnapshot.size);
+      console.log('🔍 Query snapshot empty:', querySnapshot.empty);
+      
       const history = [];
       
       querySnapshot.forEach((doc) => {
+        console.log('🔍 Processing history document:', doc.id, doc.data());
         history.push({
           _id: doc.id,
           ...doc.data()
         });
       });
       
-      console.log('Found history entries in Firestore:', history.length);
+      console.log('✅ Found history entries in Firestore:', history.length);
+      console.log('✅ History entries:', history);
       res.status(200).json(history);
     } else if (req.method === 'POST') {
       console.log('🔧 Creating history entry in Firestore');

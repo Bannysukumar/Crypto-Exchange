@@ -41,13 +41,18 @@ export class HistoryService {
   ): Promise<HistoryEntry[]> {
     try {
       console.log(`🔍 HistoryService.getUserHistory called with:`, { userId, historyType, limitCount })
+      console.log(`🔍 Calling apiService.getUserHistory...`)
       
       const result = await apiService.getUserHistory(userId, historyType, limitCount)
       console.log(`✅ HistoryService.getUserHistory result:`, result)
+      console.log(`✅ Result type:`, typeof result)
+      console.log(`✅ Result length:`, Array.isArray(result) ? result.length : 'Not an array')
       
       return result
     } catch (error) {
       console.error(`❌ HistoryService.getUserHistory error:`, error)
+      console.error(`❌ Error details:`, error.message)
+      console.error(`❌ Error stack:`, error.stack)
       throw error
     }
   }

@@ -142,12 +142,17 @@ class ApiService {
     type?: string,
     limit: number = 50
   ): Promise<Transaction[]> {
+    console.log('🔍 ApiService.getUserHistory called with:', { userId, type, limit });
+    
     const params = new URLSearchParams();
     params.append('userId', userId);
     if (type) params.append('type', type);
     params.append('limit', limit.toString());
     
-    return this.request<Transaction[]>(`/history?${params}`);
+    const url = `/history?${params}`;
+    console.log('🔍 Making request to:', url);
+    
+    return this.request<Transaction[]>(url);
   }
 
   async createHistoryEntry(historyData: Omit<Transaction, '_id' | 'timestamp'>): Promise<Transaction> {
