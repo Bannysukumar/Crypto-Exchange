@@ -1,6 +1,12 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
   (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 
+// Debug logging
+console.log('🔍 API Configuration:');
+console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+console.log('PROD:', import.meta.env.PROD);
+console.log('Final API_BASE_URL:', API_BASE_URL);
+
 export interface User {
   _id?: string;
   uid: string;
