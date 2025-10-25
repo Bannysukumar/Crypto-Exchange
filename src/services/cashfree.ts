@@ -36,6 +36,10 @@ export class CashfreeManager {
       console.log('CashfreeManager init called')
       
       // Check if we're in demo mode
+      console.log('🔍 Checking demo mode:', CASHFREE_CONFIG.isDemo())
+      console.log('🔍 Current environment:', CASHFREE_CONFIG.currentEnvironment)
+      console.log('🔍 Config object:', CASHFREE_CONFIG)
+      
       if (CASHFREE_CONFIG.isDemo()) {
         console.log('Using demo Cashfree integration...')
         await this.createDemoIntegration()
@@ -375,6 +379,9 @@ export class CashfreeManager {
       console.log('Order ID:', orderDetails.order_id)
 
       // Check if we're using real Cashfree or demo mode
+      console.log('🔍 Payment mode check - isDemo():', CASHFREE_CONFIG.isDemo())
+      console.log('🔍 Payment mode check - currentEnvironment:', CASHFREE_CONFIG.currentEnvironment)
+      
       let result: any
 
       if (CASHFREE_CONFIG.isDemo()) {
