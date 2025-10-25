@@ -132,7 +132,7 @@ export default async function handler(req, res) {
       console.log('Updating user in Firestore');
       const userData = req.body;
       
-      const userRef = doc(db, 'users', userData.uid);
+      const userRef = doc(db, 'users', uid);
       
       try {
         await updateDoc(userRef, {
@@ -147,7 +147,7 @@ export default async function handler(req, res) {
         
         console.log('User updated successfully');
         res.status(200).json({
-          _id: userData.uid,
+          _id: uid,
           ...result
         });
       } catch (firebaseError) {
@@ -155,7 +155,7 @@ export default async function handler(req, res) {
         // Return the user data anyway so the app doesn't break
         console.log('Returning user data despite Firebase error');
         res.status(200).json({
-          _id: userData.uid,
+          _id: uid,
           ...userData
         });
       }
