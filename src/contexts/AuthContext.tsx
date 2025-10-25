@@ -7,8 +7,8 @@ import {
   onAuthStateChanged
 } from 'firebase/auth'
 import { auth } from '../config/firebase'
-import { mongoDBService } from '../services/mongodb'
-import type { User as MongoDBUser } from '../services/mongodb'
+import { firebaseService } from '../services/firebase'
+import type { User as FirebaseUser } from '../services/firebase'
 import toast from 'react-hot-toast'
 
 export interface UserProfile {
@@ -70,26 +70,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const createUserProfile = async (user: User): Promise<UserProfile> => {
-    const mongoUser = await mongoDBService.initializeUserIfNotExists(
-      user.uid,
-      user.email || '',
-      user.displayName || undefined
-    )
+    const firebaseUser = await firebaseService.getUserByUid(user.uid)
 
     const profile: UserProfile = {
       userId: user.uid,
-      email: mongoUser.email,
-      displayName: mongoUser.displayName,
+      email: firebaseUser?.email || user.email || '',
+      displayName: firebaseUser?.displayName,
       walletAddress: generateWalletAddress(),
-      inrBalance: mongoUser.inrBalance,
-      cryptoBalances: mongoUser.cryptoBalances,
+      inrBalance: firebaseUser?.inrBalance || 0,
+      cryptoBalances: firebaseUser?.cryptoBalances || {
+        BTC: 0,
+        USDT: 0,
+        BXC: 0
+      },
       preferences: {
         emailNotifications: true,
         pushNotifications: false,
         autoRefresh: true
       },
-      createdAt: mongoUser.createdAt,
-      updatedAt: mongoUser.updatedAt
+      createdAt: firebaseUser?.createdAt || new Date(),
+      updatedAt: firebaseUser?.updatedAt || new Date()
     }
 
     return profile
@@ -97,25 +97,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadUserProfile = async (user: User): Promise<void> => {
     try {
-      const mongoUser = await mongoDBService.getUserByUid(user.uid)
-      
-      if (mongoUser) {
+      const firebaseUser = await firebaseService.getUserByUid(user.uid)
+
+      if (firebaseUser) {
         const profile: UserProfile = {
           userId: user.uid,
-          email: mongoUser.email,
-          displayName: mongoUser.displayName,
-          name: mongoUser.name,
-          phone: mongoUser.phone,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          name: firebaseUser.name,
+          phone: firebaseUser.phone,
           walletAddress: generateWalletAddress(),
-          inrBalance: mongoUser.inrBalance,
-          cryptoBalances: mongoUser.cryptoBalances,
+          inrBalance: firebaseUser.inrBalance,
+          cryptoBalances: firebaseUser.cryptoBalances,
           preferences: {
             emailNotifications: true,
             pushNotifications: false,
             autoRefresh: true
           },
-          createdAt: mongoUser.createdAt,
-          updatedAt: mongoUser.updatedAt
+          createdAt: firebaseUser.createdAt,
+          updatedAt: firebaseUser.updatedAt
         }
         setUserProfile(profile)
       } else {
@@ -166,28 +166,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!currentUser || !userProfile) return
 
     try {
-      const mongoUpdates: Partial<MongoDBUser> = {}
+      const firebaseUpdates: Partial<FirebaseUser> = {}
       
       if (updates.inrBalance !== undefined) {
-        mongoUpdates.inrBalance = updates.inrBalance
+        firebaseUpdates.inrBalance = updates.inrBalance
       }
       if (updates.cryptoBalances) {
-        mongoUpdates.cryptoBalances = updates.cryptoBalances
+        firebaseUpdates.cryptoBalances = updates.cryptoBalances
       }
       if (updates.email) {
-        mongoUpdates.email = updates.email
+        firebaseUpdates.email = updates.email
       }
       if (updates.displayName) {
-        mongoUpdates.displayName = updates.displayName
+        firebaseUpdates.displayName = updates.displayName
       }
       if (updates.name) {
-        mongoUpdates.name = updates.name
+        firebaseUpdates.name = updates.name
       }
       if (updates.phone) {
-        mongoUpdates.phone = updates.phone
+        firebaseUpdates.phone = updates.phone
       }
 
-      await mongoDBService.updateUser(currentUser.uid, mongoUpdates)
+      await firebaseService.updateUser(currentUser.uid, firebaseUpdates)
       
       const updatedProfile = {
         ...updates,

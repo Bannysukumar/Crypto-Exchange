@@ -21,7 +21,6 @@
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "firebase": "^10.14.1",
-    "mongodb": "^6.19.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
