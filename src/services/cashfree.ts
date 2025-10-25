@@ -503,8 +503,11 @@ export class CashfreeManager {
         try {
           const orderStatus = await this.checkOrderStatus(orderDetails.order_id)
           console.log('Order status check:', orderStatus)
+          console.log('Order status keys:', Object.keys(orderStatus || {}))
+          console.log('Order status order_status:', orderStatus?.order_status)
+          console.log('Order status status:', orderStatus?.status)
           
-          if (orderStatus && orderStatus.order_status === 'PAID') {
+          if (orderStatus && (orderStatus.order_status === 'PAID' || orderStatus.status === 'PAID')) {
             toast.dismiss('payment-toast')
             toast.success('Payment successful! Balance updated.')
             await this.handlePaymentSuccess(orderDetails.order_id, 'PAYMENT_ID', amount, 'INR', customerId, 'completed', `INR deposit via Cashfree (${CASHFREE_CONFIG.isDemo() ? 'Demo' : 'Sandbox'})`)
@@ -531,7 +534,7 @@ export class CashfreeManager {
           const orderStatus = await this.checkOrderStatus(orderDetails.order_id)
           console.log('Delayed order status check:', orderStatus)
           
-          if (orderStatus && orderStatus.order_status === 'PAID') {
+          if (orderStatus && (orderStatus.order_status === 'PAID' || orderStatus.status === 'PAID')) {
             console.log('Payment confirmed by delayed status check!')
             toast.dismiss('payment-toast')
             toast.success('Payment successful! Balance updated.')
@@ -675,7 +678,7 @@ export class CashfreeManager {
       const orderStatus = await this.checkOrderStatus(orderId)
       console.log('Manual status check result:', orderStatus)
       
-      if (orderStatus && orderStatus.order_status === 'PAID') {
+      if (orderStatus && (orderStatus.order_status === 'PAID' || orderStatus.status === 'PAID')) {
         toast.success('Payment confirmed! Balance updated.')
         // You can manually trigger balance update here if needed
       } else {
