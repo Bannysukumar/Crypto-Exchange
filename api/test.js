@@ -1,4 +1,6 @@
 export default function handler(req, res) {
+  console.log('Test endpoint called:', req.method, req.url);
+  
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -12,12 +14,14 @@ export default function handler(req, res) {
   }
   
   if (req.method === 'GET') {
+    console.log('Returning test response');
     res.status(200).json({
       success: true,
       message: 'API test endpoint is working',
       timestamp: new Date().toISOString(),
       method: req.method,
-      url: req.url
+      url: req.url,
+      query: req.query
     });
   } else {
     res.setHeader('Allow', ['GET']);

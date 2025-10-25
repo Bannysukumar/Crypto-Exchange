@@ -38,23 +38,34 @@ export default async function handler(req, res) {
 
   try {
     const { uid } = req.query;
+    console.log('User ID from query:', uid);
     
     if (!uid) {
+      console.log('No UID provided');
       return res.status(400).json({ error: 'User ID is required' });
     }
 
+    console.log('Connecting to database...');
     const { db } = await connectToDatabase();
+    console.log('Database connected successfully');
+    
     const users = db.collection('users');
+    console.log('Users collection accessed');
     
     if (req.method === 'GET') {
+      console.log('Fetching user with UID:', uid);
       const user = await users.findOne({ uid });
+      console.log('User found:', user ? 'Yes' : 'No');
       
       if (!user) {
+        console.log('User not found, returning 404');
         return res.status(404).json({ error: 'User not found' });
       }
       
+      console.log('Returning user data');
       res.status(200).json(user);
     } else if (req.method === 'POST') {
+      console.log('Creating/updating user');
       const userData = req.body;
       
       const result = await users.findOneAndUpdate(
@@ -71,13 +82,19 @@ export default async function handler(req, res) {
         }
       );
       
+      console.log('User created/updated successfully');
       res.status(200).json(result.value);
     } else {
       res.setHeader('Allow', ['GET', 'POST']);
       res.status(405).end(`Method ${req.method} Not Allowed`);
     }
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Detailed error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }
