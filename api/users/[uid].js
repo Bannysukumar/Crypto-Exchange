@@ -33,6 +33,9 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Add content-type header
+  res.setHeader('Content-Type', 'application/json');
+
   try {
     const { uid } = req.query;
     
