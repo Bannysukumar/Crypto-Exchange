@@ -59,7 +59,7 @@ class ApiService {
 
   // User operations
   async getUser(uid: string): Promise<User | null> {
-    return this.request<User | null>(`/users/${uid}`);
+    return this.request<User | null>(`/users?uid=${uid}`);
   }
 
   async createUser(userData: Omit<User, '_id' | 'createdAt' | 'updatedAt'>): Promise<User> {
@@ -90,10 +90,11 @@ class ApiService {
     limit: number = 50
   ): Promise<Transaction[]> {
     const params = new URLSearchParams();
+    params.append('userId', userId);
     if (type) params.append('type', type);
     params.append('limit', limit.toString());
     
-    return this.request<Transaction[]>(`/transactions/${userId}?${params}`);
+    return this.request<Transaction[]>(`/transactions?${params}`);
   }
 
   async createTransaction(transactionData: Omit<Transaction, '_id' | 'timestamp'>): Promise<Transaction> {
