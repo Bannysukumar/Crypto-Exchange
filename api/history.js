@@ -57,6 +57,13 @@ export default async function handler(req, res) {
           const allTransactionsQuery = query(collection(db, 'transactions'));
           const allTransactionsSnapshot = await getDocs(allTransactionsQuery);
           
+          // Test specific user query
+          const userHistoryQuery = query(
+            collection(db, 'history'),
+            where('userId', '==', userId)
+          );
+          const userHistorySnapshot = await getDocs(userHistoryQuery);
+          
           const historyDocs = [];
           allHistorySnapshot.forEach((doc) => {
             historyDocs.push({
@@ -73,8 +80,17 @@ export default async function handler(req, res) {
             });
           });
           
+          const userHistoryDocs = [];
+          userHistorySnapshot.forEach((doc) => {
+            userHistoryDocs.push({
+              id: doc.id,
+              data: doc.data()
+            });
+          });
+          
           return res.status(200).json({
             message: 'Debug info',
+            requestedUserId: userId,
             historyCollection: {
               totalDocs: allHistorySnapshot.size,
               docs: historyDocs
@@ -82,6 +98,10 @@ export default async function handler(req, res) {
             transactionsCollection: {
               totalDocs: allTransactionsSnapshot.size,
               docs: transactionDocs
+            },
+            userHistoryQuery: {
+              totalDocs: userHistorySnapshot.size,
+              docs: userHistoryDocs
             }
           });
         } catch (error) {
