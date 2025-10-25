@@ -21,6 +21,25 @@ export default async function handler(req, res) {
     
     try {
       // Create real order with Cashfree API
+      const orderData = {
+        order_id: 'order_' + Date.now(),
+        order_amount: req.body.amount || 100,
+        order_currency: 'INR',
+        customer_details: {
+          customer_id: req.body.customerId || 'customer_' + Date.now(),
+          customer_name: req.body.customerName || 'Test User',
+          customer_email: req.body.customerEmail || 'test@example.com',
+          customer_phone: req.body.customerPhone || '+1234567890'
+        },
+        order_note: 'Crypto Exchange Deposit',
+        order_tags: {
+          'category': 'crypto',
+          'type': 'deposit'
+        }
+      };
+      
+      console.log('Sending order data to Cashfree:', JSON.stringify(orderData, null, 2));
+      
       const cashfreeResponse = await fetch('https://sandbox.cashfree.com/pg/orders', {
         method: 'POST',
         headers: {
@@ -29,19 +48,7 @@ export default async function handler(req, res) {
           'x-client-id': process.env.VITE_CASHFREE_APP_ID,
           'x-client-secret': process.env.VITE_CASHFREE_SECRET_KEY
         },
-        body: JSON.stringify({
-          order_id: 'order_' + Date.now(),
-          order_amount: req.body.amount || 100,
-          order_currency: 'INR',
-          customer_details: {
-            customer_id: req.body.customerId || 'customer_' + Date.now(),
-            customer_name: req.body.customerName || 'Test User',
-            customer_email: req.body.customerEmail || 'test@example.com',
-            customer_phone: req.body.customerPhone || '+1234567890'
-          },
-          order_note: 'Crypto Exchange Deposit',
-          order_tags: ['crypto', 'deposit']
-        })
+        body: JSON.stringify(orderData)
       });
       
       if (!cashfreeResponse.ok) {
