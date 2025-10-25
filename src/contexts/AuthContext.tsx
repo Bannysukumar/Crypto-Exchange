@@ -71,6 +71,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createUserProfile = async (user: User): Promise<UserProfile> => {
     console.log('🔧 Creating new user profile for:', user.uid)
+    console.log('🔧 User email from Firebase Auth:', user.email)
+    console.log('🔧 User displayName from Firebase Auth:', user.displayName)
     
     try {
       // Create user in Firebase first
@@ -89,6 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       console.log('🔧 Creating user in Firebase with data:', newUserData)
+      console.log('🔧 Email being stored:', newUserData.email)
       await firebaseService.createUser(newUserData)
       console.log('✅ User created in Firebase successfully')
       

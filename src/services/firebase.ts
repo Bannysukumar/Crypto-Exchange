@@ -40,12 +40,15 @@ export class FirebaseService {
   async getUserByUid(uid: string): Promise<User | null> {
     try {
       return await apiService.getUser(uid)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching user:', error)
-      // If user doesn't exist, the API will create them automatically
-      // Try again after a short delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return await apiService.getUser(uid)
+      // If user doesn't exist (404), return null
+      if (error.message.includes('404')) {
+        console.log('User not found in Firebase, returning null')
+        return null
+      }
+      // For other errors, throw them
+      throw error
     }
   }
 
