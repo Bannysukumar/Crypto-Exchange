@@ -31,6 +31,7 @@ export const CASHFREE_CONFIG = {
   },
   
   // Current environment (change to 'production' when going live)
+  // FORCE DEMO MODE - ignore environment variables for now
   currentEnvironment: 'demo' as 'demo' | 'sandbox' | 'production',
   
   // Get current config based on environment
@@ -70,7 +71,9 @@ export const CASHFREE_CONFIG = {
   
   // Check if using demo environment
   isDemo() {
-    return this.currentEnvironment === 'demo';
+    // FORCE DEMO MODE - always return true for now
+    console.log('🔍 isDemo() called - currentEnvironment:', this.currentEnvironment)
+    return true; // Force demo mode
   },
   
   // Get API endpoints (use combined server)
