@@ -109,6 +109,38 @@ const History: React.FC = () => {
       const fetchedHistory = await HistoryService.getUserHistory(currentUser.uid, undefined, 100)
       console.log('🔍 Fetched history:', fetchedHistory.length, fetchedHistory)
       
+      // If no history found, try transactions collection as fallback
+      if (fetchedHistory.length === 0) {
+        console.log('🔍 No history found, trying transactions collection...')
+        try {
+          const { TransactionService } = await import('../services/transactions')
+          const transactions = await TransactionService.getUserTransactions(currentUser.uid, undefined, 100)
+          console.log('🔍 Fetched transactions as fallback:', transactions.length, transactions)
+          
+          // Convert transactions to history format
+          const historyFromTransactions = transactions.map(tx => ({
+            _id: tx.id,
+            userId: tx.userId,
+            type: tx.type,
+            amount: tx.amount,
+            currency: tx.currency,
+            description: tx.description,
+            status: tx.status,
+            timestamp: tx.timestamp,
+            txHash: tx.txHash,
+            orderId: tx.orderId,
+            paymentId: tx.paymentId
+          }))
+          
+          console.log('🔍 Converted transactions to history:', historyFromTransactions.length)
+          setTransactions(historyFromTransactions)
+          setFilteredTransactions(historyFromTransactions)
+          return
+        } catch (transactionError) {
+          console.error('❌ Error loading transactions as fallback:', transactionError)
+        }
+      }
+      
       // Debug: Log each history entry's details
       fetchedHistory.forEach((entry, index) => {
         console.log(`🔍 History entry ${index}:`, {
@@ -559,6 +591,19 @@ const History: React.FC = () => {
                   }}
                 >
                   Debug Collections
+                </button>
+                <button
+                  onClick={loadTransactions}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    background: '#17a2b8',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Refresh History
                 </button>
             </div>
           </div>
