@@ -48,13 +48,15 @@ export class TransactionService {
     limitCount: number = 50
   ): Promise<Transaction[]> {
     try {
+      console.log('🔍 TransactionService.getUserTransactions called with:', { userId, transactionType, limitCount })
       const firebaseTransactions = await firebaseService.getUserTransactions(
         userId,
         transactionType,
         limitCount
       )
+      console.log('🔍 Firebase transactions received:', firebaseTransactions.length, firebaseTransactions)
 
-      return firebaseTransactions.map(firebaseTx => ({
+      const mappedTransactions = firebaseTransactions.map(firebaseTx => ({
         id: firebaseTx._id?.toString(),
         userId: firebaseTx.userId,
         type: firebaseTx.type as 'deposit' | 'withdrawal' | 'send' | 'receive' | 'transfer',
@@ -67,8 +69,11 @@ export class TransactionService {
         orderId: firebaseTx.orderId,
         paymentId: firebaseTx.paymentId
       }))
+      
+      console.log('🔍 Mapped transactions:', mappedTransactions.length, mappedTransactions)
+      return mappedTransactions
     } catch (error) {
-      console.error('Error fetching transactions:', error)
+      console.error('❌ Error fetching transactions:', error)
       // Return empty array instead of throwing to prevent app crash
       return []
     }

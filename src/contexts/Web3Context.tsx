@@ -703,7 +703,8 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!currentUser) return
 
     try {
-      await TransactionService.logTransaction({
+      console.log('📝 Logging new transaction:', { type, amount, currency, description, txHash })
+      const transactionId = await TransactionService.logTransaction({
         userId: currentUser.uid,
         type: type as 'deposit' | 'withdrawal' | 'send' | 'receive' | 'transfer',
         amount,
@@ -712,9 +713,9 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         status: 'completed',
         txHash
       })
-      console.log('Transaction logged:', { type, amount, currency, description, txHash })
+      console.log('✅ Transaction logged successfully with ID:', transactionId)
     } catch (error) {
-      console.error('Error logging transaction:', error)
+      console.error('❌ Error logging transaction:', error)
     }
   }
 

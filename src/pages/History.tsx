@@ -34,6 +34,19 @@ const History: React.FC = () => {
       const fetchedTransactions = await TransactionService.getUserTransactions(currentUser.uid, undefined, 100)
       console.log('🔍 Fetched transactions:', fetchedTransactions.length, fetchedTransactions)
       
+      // Debug: Log each transaction's details
+      fetchedTransactions.forEach((tx, index) => {
+        console.log(`🔍 Transaction ${index}:`, {
+          id: tx.id,
+          type: tx.type,
+          amount: tx.amount,
+          currency: tx.currency,
+          description: tx.description,
+          status: tx.status,
+          timestamp: tx.timestamp
+        })
+      })
+      
       setTransactions(fetchedTransactions)
       setFilteredTransactions(fetchedTransactions)
       
