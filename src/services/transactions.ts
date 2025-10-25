@@ -21,6 +21,8 @@ export interface Transaction {
 export class TransactionService {
   static async logTransaction(transaction: Omit<Transaction, 'id' | 'timestamp'>): Promise<string> {
     try {
+      console.log('🔧 TransactionService.logTransaction called with:', transaction)
+      
       // Map transaction types to match Firebase API
       const mapTransactionType = (type: string): 'deposit' | 'withdraw' | 'send' | 'receive' => {
         switch (type) {
@@ -46,10 +48,17 @@ export class TransactionService {
         timestamp: new Date()
       }
 
+      console.log('🔧 Mapped transaction for Firebase:', firebaseTransaction)
+      console.log('🔧 Calling firebaseService.createTransaction...')
+      
       const result = await firebaseService.createTransaction(firebaseTransaction)
-      return result._id?.toString() || ''
+      console.log('🔧 firebaseService.createTransaction result:', result)
+      
+      const transactionId = result._id?.toString() || ''
+      console.log('🔧 Returning transaction ID:', transactionId)
+      return transactionId
     } catch (error) {
-      console.error('Error logging transaction:', error)
+      console.error('❌ Error logging transaction:', error)
       throw error
     }
   }

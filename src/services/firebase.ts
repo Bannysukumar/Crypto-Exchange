@@ -78,7 +78,13 @@ export class FirebaseService {
   }
 
   async createTransaction(transactionData: Omit<Transaction, '_id' | 'timestamp'>): Promise<Transaction> {
-    return await apiService.createTransaction(transactionData)
+    console.log('🔧 FirebaseService.createTransaction called with:', transactionData)
+    console.log('🔧 Calling apiService.createTransaction...')
+    
+    const result = await apiService.createTransaction(transactionData)
+    console.log('🔧 apiService.createTransaction result:', result)
+    
+    return result
   }
 
   async getTransactionByHash(txHash: string): Promise<Transaction | null> {
