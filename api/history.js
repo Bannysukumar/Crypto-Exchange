@@ -17,6 +17,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 export default async function handler(req, res) {
+  console.log('🚀 HISTORY API CALLED:', req.method, req.url);
+  
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -50,6 +52,24 @@ export default async function handler(req, res) {
           timestamp: new Date().toISOString(),
           userId: userId || 'no-user-id'
         });
+      }
+      
+      // Temporary fix - return mock data to test if API is working
+      if (userId === 'sHpmLYixdPac1j8e0WTvWM8GSko2') {
+        console.log('🔍 Returning mock data for testing');
+        const mockData = [
+          {
+            _id: 'test1',
+            userId: 'sHpmLYixdPac1j8e0WTvWM8GSko2',
+            type: 'send',
+            amount: -10,
+            currency: 'BXC',
+            description: 'Sent 10 BXC to jdthiuhguhu@gmail.com',
+            status: 'completed',
+            timestamp: new Date()
+          }
+        ];
+        return res.status(200).json(mockData);
       }
       
       if (!userId) {
