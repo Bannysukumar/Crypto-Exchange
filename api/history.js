@@ -38,11 +38,61 @@ export default async function handler(req, res) {
     console.log('🔍 History API is working!');
     
     if (req.method === 'GET') {
-      const { userId, type, limit } = req.query;
+      const { userId, type, limit, debug } = req.query;
       
       console.log('🔍 Fetching history from Firestore for user:', userId, 'type:', type, 'limit:', limit);
       console.log('🔍 Firebase config:', firebaseConfig);
       console.log('🔍 Database instance:', db);
+      
+      // Debug mode - return all collections data
+      if (debug === 'true') {
+        console.log('🔍 Debug mode enabled');
+        
+        try {
+          // Get all history documents
+          const allHistoryQuery = query(collection(db, 'history'));
+          const allHistorySnapshot = await getDocs(allHistoryQuery);
+          
+          // Get all transaction documents  
+          const allTransactionsQuery = query(collection(db, 'transactions'));
+          const allTransactionsSnapshot = await getDocs(allTransactionsQuery);
+          
+          const historyDocs = [];
+          allHistorySnapshot.forEach((doc) => {
+            historyDocs.push({
+              id: doc.id,
+              data: doc.data()
+            });
+          });
+          
+          const transactionDocs = [];
+          allTransactionsSnapshot.forEach((doc) => {
+            transactionDocs.push({
+              id: doc.id,
+              data: doc.data()
+            });
+          });
+          
+          return res.status(200).json({
+            message: 'Debug info',
+            historyCollection: {
+              totalDocs: allHistorySnapshot.size,
+              docs: historyDocs
+            },
+            transactionsCollection: {
+              totalDocs: allTransactionsSnapshot.size,
+              docs: transactionDocs
+            }
+          });
+        } catch (error) {
+          console.error('Debug error:', error);
+          return res.status(500).json({
+            error: 'Debug failed',
+            message: error.message,
+            stack: error.stack
+          });
+        }
+      }
       
       // Test endpoint - return simple response
       if (req.url === '/api/history/test') {
@@ -55,7 +105,7 @@ export default async function handler(req, res) {
       }
       
       // Debug endpoint - return collection stats
-      if (req.url === '/api/history/debug') {
+      if (req.url.includes('/debug')) {
         console.log('🔍 Debug endpoint called');
         
         try {
@@ -95,9 +145,11 @@ export default async function handler(req, res) {
             }
           });
         } catch (error) {
+          console.error('Debug error:', error);
           return res.status(500).json({
             error: 'Debug failed',
-            message: error.message
+            message: error.message,
+            stack: error.stack
           });
         }
       }

@@ -66,7 +66,7 @@ const History: React.FC = () => {
     try {
       console.log('🔍 Testing debug endpoint...')
       
-      const response = await fetch('/api/history/debug')
+      const response = await fetch('/api/history?debug=true')
       const result = await response.json()
       
       console.log('🔍 Debug result:', result)
