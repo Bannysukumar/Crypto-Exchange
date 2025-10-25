@@ -21,6 +21,46 @@ const History: React.FC = () => {
   const { currentUser, userProfile } = useAuth()
   const navigate = useNavigate()
 
+  // Test function to create a history entry
+  const testCreateHistoryEntry = async () => {
+    if (!currentUser) return
+    
+    try {
+      console.log('🔧 Testing history entry creation...')
+      
+      // Create a test history entry directly via API
+      const response = await fetch('/api/history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.uid,
+          type: 'deposit',
+          amount: 100,
+          currency: 'BXC',
+          description: 'Test history entry',
+          status: 'completed',
+          timestamp: new Date()
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('✅ Test history entry created:', result)
+        toast.success('Test history entry created!')
+        await loadTransactions() // Reload to see the new entry
+      } else {
+        const error = await response.text()
+        console.error('❌ Test history entry failed:', error)
+        toast.error('Failed to create test history entry: ' + error)
+      }
+    } catch (error) {
+      console.error('❌ Error creating test history entry:', error)
+      toast.error('Error creating test history entry')
+    }
+  }
+
   const loadTransactions = useCallback(async () => {
     if (!currentUser) {
       navigate('/')
@@ -459,6 +499,19 @@ const History: React.FC = () => {
                 }}
               >
                 Export CSV
+              </button>
+              <button
+                onClick={testCreateHistoryEntry}
+                style={{
+                  padding: '0.75rem 1rem',
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Test History API
               </button>
             </div>
           </div>
