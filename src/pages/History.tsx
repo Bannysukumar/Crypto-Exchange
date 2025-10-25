@@ -184,7 +184,10 @@ const History: React.FC = () => {
     
     try {
       console.log('🔧 Adding test transaction...')
-      await TransactionService.logTransaction({
+      console.log('🔧 Current user ID:', currentUser.uid)
+      console.log('🔧 Calling TransactionService.logTransaction...')
+      
+      const result = await TransactionService.logTransaction({
         userId: currentUser.uid,
         type: 'deposit',
         amount: 100,
@@ -193,6 +196,7 @@ const History: React.FC = () => {
         status: 'completed'
       })
       
+      console.log('🔧 TransactionService.logTransaction result:', result)
       console.log('🔧 Test transaction added, reloading...')
       await loadTransactions()
       toast.success('Test transaction added!')
@@ -628,6 +632,67 @@ const History: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Debug Section - Always visible for testing */}
+        {!loading && (
+          <div style={{
+            background: '#f8f9fa',
+            border: '2px dashed #dee2e6',
+            borderRadius: '8px',
+            padding: '2rem',
+            margin: '1rem 0',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ color: '#dc3545', marginBottom: '1rem' }}>🔧 Debug Tools</h3>
+            <p style={{ marginBottom: '1rem', color: '#6c757d' }}>
+              No transactions found. Use these tools to create test data:
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={addTestTransaction}
+                style={{
+                  padding: '0.75rem 1rem',
+                  background: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Add Test Transaction
+              </button>
+              <button
+                onClick={addMultipleTestTransactions}
+                style={{
+                  padding: '0.75rem 1rem',
+                  background: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Add Multiple Test Transactions
+              </button>
+              <button
+                onClick={forceCreateTransaction}
+                style={{
+                  padding: '0.75rem 1rem',
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Force Create Transaction
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Transaction List */}
         <div className="card">
