@@ -81,14 +81,14 @@ class ApiService {
   }
 
   async updateUser(uid: string, updates: Partial<User>): Promise<void> {
-    return this.request<void>(`/users/${uid}`, {
+    return this.request<void>(`/users?uid=${uid}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
   }
 
   async updateUserBalance(uid: string, currency: string, amount: number): Promise<void> {
-    return this.request<void>(`/users/${uid}/balance`, {
+    return this.request<void>(`/users?uid=${uid}`, {
       method: 'PUT',
       body: JSON.stringify({ currency, amount }),
     });

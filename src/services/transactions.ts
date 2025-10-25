@@ -54,18 +54,18 @@ export class TransactionService {
         limitCount
       )
 
-      return mongoTransactions.map(mongoTx => ({
-        id: mongoTx._id?.toString(),
-        userId: mongoTx.userId,
-        type: mongoTx.type as 'deposit' | 'withdrawal' | 'send' | 'receive' | 'transfer',
-        amount: mongoTx.amount,
-        currency: mongoTx.currency,
-        description: mongoTx.description,
-        status: mongoTx.status as 'pending' | 'completed' | 'failed' | 'processing',
-        timestamp: mongoTx.timestamp,
-        txHash: mongoTx.txHash,
-        orderId: mongoTx.orderId,
-        paymentId: mongoTx.paymentId
+      return firebaseTransactions.map(firebaseTx => ({
+        id: firebaseTx._id?.toString(),
+        userId: firebaseTx.userId,
+        type: firebaseTx.type as 'deposit' | 'withdrawal' | 'send' | 'receive' | 'transfer',
+        amount: firebaseTx.amount,
+        currency: firebaseTx.currency,
+        description: firebaseTx.description,
+        status: firebaseTx.status as 'pending' | 'completed' | 'failed' | 'processing',
+        timestamp: firebaseTx.timestamp,
+        txHash: firebaseTx.txHash,
+        orderId: firebaseTx.orderId,
+        paymentId: firebaseTx.paymentId
       }))
     } catch (error) {
       console.error('Error fetching transactions:', error)
