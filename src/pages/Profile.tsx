@@ -463,6 +463,59 @@ const Profile: React.FC = () => {
                   <span style={{ fontWeight: '600' }}>{stats.totalTransfers}</span>
                 </div>
               </div>
+              
+              {/* Test Button for Debugging */}
+              <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+                <button
+                  onClick={async () => {
+                    if (!currentUser) return
+                    try {
+                      console.log('🔧 Adding test transactions...')
+                      await TransactionService.logTransaction({
+                        userId: currentUser.uid,
+                        type: 'deposit',
+                        amount: 100,
+                        currency: 'INR',
+                        description: 'Test INR deposit',
+                        status: 'completed'
+                      })
+                      await TransactionService.logTransaction({
+                        userId: currentUser.uid,
+                        type: 'withdrawal',
+                        amount: 50,
+                        currency: 'BTC',
+                        description: 'Test BTC withdrawal',
+                        status: 'completed'
+                      })
+                      await TransactionService.logTransaction({
+                        userId: currentUser.uid,
+                        type: 'transfer',
+                        amount: 25,
+                        currency: 'USDT',
+                        description: 'Test USDT transfer',
+                        status: 'completed'
+                      })
+                      console.log('🔧 Test transactions added, reloading stats...')
+                      await loadUserStats()
+                      toast.success('Test transactions added!')
+                    } catch (error) {
+                      console.error('❌ Error adding test transactions:', error)
+                      toast.error('Failed to add test transactions')
+                    }
+                  }}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    background: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  🔧 Add Test Transactions
+                </button>
+              </div>
             </div>
 
             {/* Account Info */}
