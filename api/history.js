@@ -161,18 +161,22 @@ export default async function handler(req, res) {
       }
       
       // Build Firestore query for history collection
-      let historyQuery = query(
-        collection(db, 'history'),
-        where('userId', '==', userId),
-        orderBy('timestamp', 'desc')
-      );
+      console.log('🔍 Building query for userId:', userId);
       
-      // Add type filter if specified
+      let historyQuery;
       if (type) {
+        console.log('🔍 Building query with type filter:', type);
         historyQuery = query(
           collection(db, 'history'),
           where('userId', '==', userId),
           where('type', '==', type),
+          orderBy('timestamp', 'desc')
+        );
+      } else {
+        console.log('🔍 Building query without type filter');
+        historyQuery = query(
+          collection(db, 'history'),
+          where('userId', '==', userId),
           orderBy('timestamp', 'desc')
         );
       }
@@ -182,6 +186,8 @@ export default async function handler(req, res) {
       if (limitNum < 1000) {
         historyQuery = query(historyQuery, limit(limitNum));
       }
+      
+      console.log('🔍 Final query built:', historyQuery);
       
       console.log('🔍 Executing Firestore query...');
       console.log('🔍 Query details:', {
@@ -206,17 +212,20 @@ export default async function handler(req, res) {
         });
       }
       
-      // Also check transactions collection
-      console.log('🔍 Checking transactions collection...');
-      const allTransactionsQuery = query(collection(db, 'transactions'));
-      const allTransactionsSnapshot = await getDocs(allTransactionsQuery);
-      console.log('🔍 Total documents in transactions collection:', allTransactionsSnapshot.size);
+      // Test direct query for this specific user
+      console.log('🔍 Testing direct query for user:', userId);
+      const testQuery = query(
+        collection(db, 'history'),
+        where('userId', '==', userId)
+      );
+      const testSnapshot = await getDocs(testQuery);
+      console.log('🔍 Direct query result size:', testSnapshot.size);
       
-      if (allTransactionsSnapshot.size > 0) {
-        console.log('🔍 Sample transaction documents:');
-        allTransactionsSnapshot.forEach((doc, index) => {
-          if (index < 3) { // Show first 3 documents
-            console.log(`🔍 Transaction ${index}:`, doc.id, doc.data());
+      if (testSnapshot.size > 0) {
+        console.log('🔍 Direct query found documents:');
+        testSnapshot.forEach((doc, index) => {
+          if (index < 3) {
+            console.log(`🔍 Direct result ${index}:`, doc.id, doc.data());
           }
         });
       }
