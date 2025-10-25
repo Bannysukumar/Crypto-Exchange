@@ -521,14 +521,14 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
     console.log('🚀 Starting transaction monitoring...')
     
-    // Check for deposits every 30 seconds
+    // Check for deposits every 2 minutes (reduced frequency for better performance)
     const monitoringInterval = setInterval(async () => {
       try {
         await checkDirectDepositsToContract()
       } catch (error) {
         console.error('Transaction monitoring error:', error)
       }
-    }, 30000)
+    }, 120000) // 2 minutes instead of 30 seconds
 
     // Store interval ID for cleanup
     ;(window as any).transactionMonitoringInterval = monitoringInterval
