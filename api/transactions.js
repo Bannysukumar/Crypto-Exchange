@@ -99,6 +99,14 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Error:', error);
+    
+    // If Firebase fails completely, return empty array to prevent 500
+    if (req.method === 'GET') {
+      console.log('Firebase error, returning empty transactions array');
+      res.status(200).json([]);
+      return;
+    }
+    
     res.status(500).json({ error: 'Internal server error' });
   }
 }

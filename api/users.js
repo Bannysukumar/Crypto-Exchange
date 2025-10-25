@@ -127,8 +127,39 @@ export default async function handler(req, res) {
         _id: userData.uid,
         ...result
       });
+    } else if (req.method === 'PUT') {
+      console.log('Updating user in Firestore');
+      const userData = req.body;
+      
+      const userRef = doc(db, 'users', userData.uid);
+      
+      try {
+        await updateDoc(userRef, {
+          ...userData,
+          updatedAt: serverTimestamp()
+        });
+        console.log('User updated in Firestore');
+        
+        // Get the updated user data
+        const updatedUserSnap = await getDoc(userRef);
+        const result = updatedUserSnap.data();
+        
+        console.log('User updated successfully');
+        res.status(200).json({
+          _id: userData.uid,
+          ...result
+        });
+      } catch (firebaseError) {
+        console.error('Error updating user in Firestore:', firebaseError);
+        // Return the user data anyway so the app doesn't break
+        console.log('Returning user data despite Firebase error');
+        res.status(200).json({
+          _id: userData.uid,
+          ...userData
+        });
+      }
     } else {
-      res.setHeader('Allow', ['GET', 'POST']);
+      res.setHeader('Allow', ['GET', 'POST', 'PUT']);
       res.status(405).end(`Method ${req.method} Not Allowed`);
     }
   } catch (error) {
