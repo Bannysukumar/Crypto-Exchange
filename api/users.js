@@ -129,40 +129,52 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Either UID or email is required' });
       }
     } else if (req.method === 'POST') {
-      console.log('Creating/updating user in Firestore');
+      console.log('🔧 Creating/updating user in Firestore');
       const userData = req.body;
+      console.log('🔧 User data received:', userData);
       
-      const userRef = doc(db, 'users', userData.uid);
-      
-      // Check if user exists
-      const userSnap = await getDoc(userRef);
-      
-      if (userSnap.exists()) {
-        // Update existing user
-        await updateDoc(userRef, {
-          ...userData,
-          updatedAt: serverTimestamp()
+      try {
+        const userRef = doc(db, 'users', userData.uid);
+        
+        // Check if user exists
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          console.log('🔧 User exists, updating...');
+          // Update existing user
+          await updateDoc(userRef, {
+            ...userData,
+            updatedAt: serverTimestamp()
+          });
+          console.log('✅ User updated in Firestore');
+        } else {
+          console.log('🔧 User does not exist, creating new user...');
+          // Create new user
+          await setDoc(userRef, {
+            ...userData,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+          console.log('✅ User created in Firestore');
+        }
+        
+        // Get the updated user data
+        const updatedUserSnap = await getDoc(userRef);
+        const result = updatedUserSnap.data();
+        
+        console.log('✅ User created/updated successfully:', result);
+        res.status(200).json({
+          _id: userData.uid,
+          ...result
         });
-        console.log('User updated in Firestore');
-      } else {
-        // Create new user
-        await setDoc(userRef, {
-          ...userData,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+      } catch (firebaseError) {
+        console.error('❌ Error creating/updating user in Firestore:', firebaseError);
+        res.status(500).json({ 
+          success: false, 
+          error: 'Failed to create/update user',
+          details: firebaseError.message
         });
-        console.log('User created in Firestore');
       }
-      
-      // Get the updated user data
-      const updatedUserSnap = await getDoc(userRef);
-      const result = updatedUserSnap.data();
-      
-      console.log('User created/updated successfully');
-      res.status(200).json({
-        _id: userData.uid,
-        ...result
-      });
     } else if (req.method === 'PUT') {
       console.log('Updating user in Firestore');
       const userData = req.body;

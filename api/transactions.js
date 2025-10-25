@@ -77,23 +77,33 @@ export default async function handler(req, res) {
       console.log('Found transactions in Firestore:', transactions.length);
       res.status(200).json(transactions);
     } else if (req.method === 'POST') {
-      console.log('Creating transaction in Firestore');
+      console.log('🔧 Creating transaction in Firestore');
       const transactionData = req.body;
+      console.log('🔧 Transaction data received:', transactionData);
       
-      // Add transaction to Firestore
-      const docRef = await addDoc(collection(db, 'transactions'), {
-        ...transactionData,
-        timestamp: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      
-      console.log('Transaction created in Firestore with ID:', docRef.id);
-      res.status(200).json({ 
-        success: true, 
-        transactionId: docRef.id,
-        message: 'Transaction created successfully'
-      });
+      try {
+        // Add transaction to Firestore
+        const docRef = await addDoc(collection(db, 'transactions'), {
+          ...transactionData,
+          timestamp: serverTimestamp(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        
+        console.log('✅ Transaction created in Firestore with ID:', docRef.id);
+        res.status(200).json({ 
+          success: true, 
+          transactionId: docRef.id,
+          message: 'Transaction created successfully'
+        });
+      } catch (firebaseError) {
+        console.error('❌ Error creating transaction in Firestore:', firebaseError);
+        res.status(500).json({ 
+          success: false, 
+          error: 'Failed to create transaction',
+          details: firebaseError.message
+        });
+      }
     } else {
       res.setHeader('Allow', ['GET', 'POST']);
       res.status(405).end(`Method ${req.method} Not Allowed`);

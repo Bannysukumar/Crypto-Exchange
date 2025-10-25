@@ -70,36 +70,92 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const createUserProfile = async (user: User): Promise<UserProfile> => {
-    const firebaseUser = await firebaseService.getUserByUid(user.uid)
+    console.log('🔧 Creating new user profile for:', user.uid)
+    
+    try {
+      // Create user in Firebase first
+      const newUserData = {
+        uid: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || '',
+        name: user.displayName || '',
+        phone: '',
+        inrBalance: 0,
+        cryptoBalances: {
+          BTC: 0,
+          USDT: 0,
+          BXC: 0
+        }
+      }
+      
+      console.log('🔧 Creating user in Firebase with data:', newUserData)
+      await firebaseService.createUser(newUserData)
+      console.log('✅ User created in Firebase successfully')
+      
+      // Now get the created user data
+      const firebaseUser = await firebaseService.getUserByUid(user.uid)
+      console.log('🔧 Retrieved created user from Firebase:', firebaseUser)
 
-    const profile: UserProfile = {
-      userId: user.uid,
-      email: firebaseUser?.email || user.email || '',
-      displayName: firebaseUser?.displayName,
-      walletAddress: generateWalletAddress(),
-      inrBalance: firebaseUser?.inrBalance || 0,
-      cryptoBalances: firebaseUser?.cryptoBalances || {
-        BTC: 0,
-        USDT: 0,
-        BXC: 0
-      },
-      preferences: {
-        emailNotifications: true,
-        pushNotifications: false,
-        autoRefresh: true
-      },
-      createdAt: firebaseUser?.createdAt || new Date(),
-      updatedAt: firebaseUser?.updatedAt || new Date()
+      const profile: UserProfile = {
+        userId: user.uid,
+        email: firebaseUser?.email || user.email || '',
+        displayName: firebaseUser?.displayName || user.displayName,
+        name: firebaseUser?.name || user.displayName || '',
+        phone: firebaseUser?.phone || '',
+        walletAddress: generateWalletAddress(),
+        inrBalance: firebaseUser?.inrBalance || 0,
+        cryptoBalances: firebaseUser?.cryptoBalances || {
+          BTC: 0,
+          USDT: 0,
+          BXC: 0
+        },
+        preferences: {
+          emailNotifications: true,
+          pushNotifications: false,
+          autoRefresh: true
+        },
+        createdAt: firebaseUser?.createdAt || new Date(),
+        updatedAt: firebaseUser?.updatedAt || new Date()
+      }
+
+      console.log('✅ Created user profile:', profile)
+      return profile
+    } catch (error) {
+      console.error('❌ Error creating user profile:', error)
+      // Return a basic profile even if Firebase fails
+      const profile: UserProfile = {
+        userId: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || '',
+        name: user.displayName || '',
+        phone: '',
+        walletAddress: generateWalletAddress(),
+        inrBalance: 0,
+        cryptoBalances: {
+          BTC: 0,
+          USDT: 0,
+          BXC: 0
+        },
+        preferences: {
+          emailNotifications: true,
+          pushNotifications: false,
+          autoRefresh: true
+        },
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      return profile
     }
-
-    return profile
   }
 
   const loadUserProfile = async (user: User): Promise<void> => {
     try {
+      console.log('🔧 Loading user profile for:', user.uid)
       const firebaseUser = await firebaseService.getUserByUid(user.uid)
+      console.log('🔧 Firebase user data:', firebaseUser)
 
       if (firebaseUser) {
+        console.log('✅ User exists in Firebase, creating profile')
         const profile: UserProfile = {
           userId: user.uid,
           email: firebaseUser.email,
@@ -117,14 +173,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdAt: firebaseUser.createdAt,
           updatedAt: firebaseUser.updatedAt
         }
+        console.log('✅ Setting existing user profile:', profile)
         setUserProfile(profile)
       } else {
+        console.log('🔧 User not found in Firebase, creating new profile')
         const newProfile = await createUserProfile(user)
+        console.log('✅ Setting new user profile:', newProfile)
         setUserProfile(newProfile)
       }
     } catch (error) {
-      console.error('Error loading user profile:', error)
+      console.error('❌ Error loading user profile:', error)
       toast.error('Error loading profile')
+      // Try to create a basic profile as fallback
+      try {
+        const fallbackProfile = await createUserProfile(user)
+        setUserProfile(fallbackProfile)
+      } catch (fallbackError) {
+        console.error('❌ Fallback profile creation failed:', fallbackError)
+      }
     }
   }
 
