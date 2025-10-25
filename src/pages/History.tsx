@@ -70,6 +70,11 @@ const History: React.FC = () => {
       const result = await response.json()
       
       console.log('🔍 Debug result:', result)
+      console.log('🔍 History collection:', result.historyCollection)
+      console.log('🔍 Transactions collection:', result.transactionsCollection)
+      console.log('🔍 History docs:', result.historyCollection?.docs)
+      console.log('🔍 Transaction docs:', result.transactionsCollection?.docs)
+      
       toast.success(`Debug: History: ${result.historyCollection.totalDocs}, Transactions: ${result.transactionsCollection.totalDocs}`)
     } catch (error) {
       console.error('❌ Debug failed:', error)
