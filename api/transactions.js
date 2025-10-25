@@ -1,26 +1,19 @@
-// Temporarily disable MongoDB to test basic API functionality
-// import { MongoClient } from 'mongodb';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, query, where, orderBy, limit, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 
-// const MONGODB_URI = 'mongodb+srv://donvaibhav21:<StX7LTcANb9G5NxI>@cluster0.dmd7ds0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-// const DB_NAME = 'CyrptopayDB';
+const firebaseConfig = {
+  apiKey: "AIzaSyDAVopTBDSikDCHqEnljBMfk6ml-rewiSE",
+  authDomain: "cryptopay-e04c3.firebaseapp.com",
+  projectId: "cryptopay-e04c3",
+  storageBucket: "cryptopay-e04c3.firebasestorage.app",
+  messagingSenderId: "935827653972",
+  appId: "1:935827653972:web:7c2f3c14f4c6d57345f4c1",
+  measurementId: "G-L7DXEYRW49"
+};
 
-// let cachedClient = null;
-// let cachedDb = null;
-
-// async function connectToDatabase() {
-//   if (cachedClient && cachedDb) {
-//     return { client: cachedClient, db: cachedDb };
-//   }
-
-//   const client = new MongoClient(MONGODB_URI);
-//   await client.connect();
-//   const db = client.db(DB_NAME);
-
-//   cachedClient = client;
-//   cachedDb = db;
-
-//   return { client, db };
-// }
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -41,86 +34,64 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const { userId, type, limit } = req.query;
       
-      console.log('Fetching transactions for user:', userId, 'type:', type, 'limit:', limit);
+      console.log('Fetching transactions from Firestore for user:', userId, 'type:', type, 'limit:', limit);
       
       if (!userId) {
         return res.status(400).json({ error: 'User ID is required' });
       }
       
-      // Return mock transaction data
-      const mockTransactions = [
-        {
-          _id: 'mock_tx_1',
-          userId: userId,
-          type: 'deposit',
-          amount: 100,
-          currency: 'USDT',
-          description: 'Deposit from wallet',
-          status: 'completed',
-          txHash: '0x1234567890abcdef',
-          timestamp: new Date(Date.now() - 86400000), // 1 day ago
-          createdAt: new Date(Date.now() - 86400000),
-          updatedAt: new Date(Date.now() - 86400000)
-        },
-        {
-          _id: 'mock_tx_2',
-          userId: userId,
-          type: 'withdrawal',
-          amount: 50,
-          currency: 'BTC',
-          description: 'Withdrawal to wallet',
-          status: 'completed',
-          txHash: '0xabcdef1234567890',
-          timestamp: new Date(Date.now() - 172800000), // 2 days ago
-          createdAt: new Date(Date.now() - 172800000),
-          updatedAt: new Date(Date.now() - 172800000)
-        },
-        {
-          _id: 'mock_tx_3',
-          userId: userId,
-          type: 'transfer',
-          amount: 25,
-          currency: 'BXC',
-          description: 'Transfer to another user',
-          status: 'completed',
-          timestamp: new Date(Date.now() - 259200000), // 3 days ago
-          createdAt: new Date(Date.now() - 259200000),
-          updatedAt: new Date(Date.now() - 259200000)
-        }
-      ];
+      // Build Firestore query
+      let transactionsQuery = query(
+        collection(db, 'transactions'),
+        where('userId', '==', userId),
+        orderBy('timestamp', 'desc')
+      );
       
-      // Filter by type if specified
-      let filteredTransactions = mockTransactions;
+      // Add type filter if specified
       if (type) {
-        filteredTransactions = mockTransactions.filter(tx => tx.type === type);
+        transactionsQuery = query(
+          collection(db, 'transactions'),
+          where('userId', '==', userId),
+          where('type', '==', type),
+          orderBy('timestamp', 'desc')
+        );
       }
       
-      // Apply limit
+      // Add limit if specified
       const limitNum = parseInt(limit) || 100;
-      const limitedTransactions = filteredTransactions.slice(0, limitNum);
+      if (limitNum < 1000) {
+        transactionsQuery = query(transactionsQuery, limit(limitNum));
+      }
       
-      console.log('Returning mock transactions:', limitedTransactions.length);
-      res.status(200).json(limitedTransactions);
+      const querySnapshot = await getDocs(transactionsQuery);
+      const transactions = [];
+      
+      querySnapshot.forEach((doc) => {
+        transactions.push({
+          _id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      console.log('Found transactions in Firestore:', transactions.length);
+      res.status(200).json(transactions);
     } else if (req.method === 'POST') {
-      console.log('Creating transaction');
+      console.log('Creating transaction in Firestore');
       const transactionData = req.body;
       
-      // Return mock created transaction
-      const result = {
-        _id: 'mock_tx_' + Date.now(),
+      // Add transaction to Firestore
+      const docRef = await addDoc(collection(db, 'transactions'), {
         ...transactionData,
-        status: 'pending',
-        timestamp: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+        timestamp: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
       
-      console.log('Transaction created successfully');
+      console.log('Transaction created in Firestore with ID:', docRef.id);
       res.status(200).json({ 
         success: true, 
-        transactionId: result._id,
-        message: 'Transaction created successfully',
-        transaction: result
+        transactionId: docRef.id,
+        message: 'Transaction created successfully'
       });
     } else {
       res.setHeader('Allow', ['GET', 'POST']);

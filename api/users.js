@@ -1,26 +1,19 @@
-// Temporarily disable MongoDB to test basic API functionality
-// import { MongoClient } from 'mongodb';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
-// const MONGODB_URI = 'mongodb+srv://donvaibhav21:<StX7LTcANb9G5NxI>@cluster0.dmd7ds0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-// const DB_NAME = 'CyrptopayDB';
+const firebaseConfig = {
+  apiKey: "AIzaSyDAVopTBDSikDCHqEnljBMfk6ml-rewiSE",
+  authDomain: "cryptopay-e04c3.firebaseapp.com",
+  projectId: "cryptopay-e04c3",
+  storageBucket: "cryptopay-e04c3.firebasestorage.app",
+  messagingSenderId: "935827653972",
+  appId: "1:935827653972:web:7c2f3c14f4c6d57345f4c1",
+  measurementId: "G-L7DXEYRW49"
+};
 
-// let cachedClient = null;
-// let cachedDb = null;
-
-// async function connectToDatabase() {
-//   if (cachedClient && cachedDb) {
-//     return { client: cachedClient, db: cachedDb };
-//   }
-
-//   const client = new MongoClient(MONGODB_URI);
-//   await client.connect();
-//   const db = client.db(DB_NAME);
-
-//   cachedClient = client;
-//   cachedDb = db;
-
-//   return { client, db };
-// }
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 export default async function handler(req, res) {
   console.log('API Users endpoint called:', req.method, req.url, req.query);
@@ -46,45 +39,61 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    console.log('Processing request without database connection...');
+    console.log('Connecting to Firebase Firestore...');
     
     if (req.method === 'GET') {
       console.log('Fetching user with UID:', uid);
       
-      // Return mock user data for testing
-      const mockUser = {
-        _id: 'mock_id_' + uid,
-        uid: uid,
-        email: 'test@example.com',
-        displayName: 'Test User',
-        name: 'Test User',
-        phone: '+1234567890',
-        inrBalance: 1000,
-        cryptoBalances: {
-          BTC: 0.001,
-          USDT: 100,
-          BXC: 50
-        },
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const userRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userRef);
       
-      console.log('Returning mock user data');
-      res.status(200).json(mockUser);
+      if (!userSnap.exists()) {
+        console.log('User not found in Firestore');
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      const userData = userSnap.data();
+      console.log('User found in Firestore:', userData);
+      
+      res.status(200).json({
+        _id: uid,
+        ...userData
+      });
     } else if (req.method === 'POST') {
-      console.log('Creating/updating user');
+      console.log('Creating/updating user in Firestore');
       const userData = req.body;
       
-      // Return the user data with mock ID
-      const result = {
-        ...userData,
-        _id: 'mock_id_' + userData.uid,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const userRef = doc(db, 'users', userData.uid);
+      
+      // Check if user exists
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        // Update existing user
+        await updateDoc(userRef, {
+          ...userData,
+          updatedAt: serverTimestamp()
+        });
+        console.log('User updated in Firestore');
+      } else {
+        // Create new user
+        await setDoc(userRef, {
+          ...userData,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        console.log('User created in Firestore');
+      }
+      
+      // Get the updated user data
+      const updatedUserSnap = await getDoc(userRef);
+      const result = updatedUserSnap.data();
       
       console.log('User created/updated successfully');
-      res.status(200).json(result);
+      res.status(200).json({
+        _id: userData.uid,
+        ...result
+      });
     } else {
       res.setHeader('Allow', ['GET', 'POST']);
       res.status(405).end(`Method ${req.method} Not Allowed`);
