@@ -61,6 +61,12 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isScanning, setIsScanning] = useState(false) // Add scanning state to prevent multiple simultaneous scans
   const [processedTransactions, setProcessedTransactions] = useState<Set<string>>(new Set()) // Track processed transactions
   
+  // Global processed transactions set (persistent across re-renders)
+  const globalProcessedTransactions = (window as any).globalProcessedTransactions || new Set<string>()
+  if (!(window as any).globalProcessedTransactions) {
+    (window as any).globalProcessedTransactions = globalProcessedTransactions
+  }
+  
   const { currentUser, updateUserProfile } = useAuth()
 
   const initWeb3 = async () => {
@@ -389,12 +395,12 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         
         console.log(`💰 Detected direct ${tokenType} deposit: ${amount} from ${from}`)
         
-        // Check if this transaction was already processed (local cache + database)
+        // Check if this transaction was already processed (global cache + database)
         const txHash = transfer.transactionHash
         
-        // First check local cache for immediate duplicate prevention
-        if (processedTransactions.has(txHash)) {
-          console.log(`⏭️ Skipping duplicate ${tokenType} transaction (local cache): ${txHash}`)
+        // First check global cache for immediate duplicate prevention
+        if (globalProcessedTransactions.has(txHash)) {
+          console.log(`⏭️ Skipping duplicate ${tokenType} transaction (global cache): ${txHash}`)
           return
         }
         
@@ -404,7 +410,8 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!existingTx) {
           console.log(`📝 Logging new ${tokenType} transaction: ${amount}`)
           
-          // Add to local cache immediately to prevent race conditions
+          // Add to global cache immediately to prevent race conditions
+          globalProcessedTransactions.add(txHash)
           setProcessedTransactions(prev => new Set(prev).add(txHash))
           
           // Log the transaction
@@ -423,7 +430,8 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log(`✅ Successfully processed ${tokenType} deposit`)
         } else {
           console.log(`⏭️ Skipping duplicate ${tokenType} transaction (database): ${txHash}`)
-          // Add to local cache even if it's a duplicate to prevent future processing
+          // Add to global cache even if it's a duplicate to prevent future processing
+          globalProcessedTransactions.add(txHash)
           setProcessedTransactions(prev => new Set(prev).add(txHash))
         }
       } else {
@@ -535,14 +543,14 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
     console.log('🚀 Starting transaction monitoring...')
     
-    // Check for deposits every 5 minutes (further reduced frequency to prevent duplicates)
+    // Check for deposits every 10 minutes (reduced frequency to prevent duplicates)
     const monitoringInterval = setInterval(async () => {
       try {
         await checkDirectDepositsToContract()
       } catch (error) {
         console.error('Transaction monitoring error:', error)
       }
-    }, 300000) // 5 minutes to prevent duplicate processing
+    }, 600000) // 10 minutes to prevent duplicate processing
 
     // Store interval ID for cleanup
     ;(window as any).transactionMonitoringInterval = monitoringInterval
@@ -556,6 +564,15 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('🛑 Stopped transaction monitoring')
     }
   }
+
+  // Clear processed transactions when user changes
+  useEffect(() => {
+    if (currentUser) {
+      console.log('🔄 User changed, clearing processed transactions cache')
+      globalProcessedTransactions.clear()
+      setProcessedTransactions(new Set())
+    }
+  }, [currentUser])
 
   // Manual transaction detection by transaction hash (for debugging)
   const detectTransactionByHash = async (txHash: string) => {
