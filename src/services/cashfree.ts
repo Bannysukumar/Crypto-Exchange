@@ -21,6 +21,9 @@ export class CashfreeManager {
     console.log('CashfreeManager constructor called')
     this.config = CASHFREE_CONFIG.getCurrentConfig()
     console.log('CashfreeManager config:', this.config)
+    console.log('CashfreeManager appId:', CASHFREE_CONFIG.getAppId())
+    console.log('CashfreeManager secretKey:', CASHFREE_CONFIG.getSecretKey() ? '***' + CASHFREE_CONFIG.getSecretKey().slice(-4) : 'NOT SET')
+    console.log('CashfreeManager mode:', CASHFREE_CONFIG.getMode())
     
     this.init().then(() => {
       this.isInitialized = true
@@ -56,7 +59,11 @@ export class CashfreeManager {
       // Check if SDK is already loaded
       if (window.Cashfree) {
         console.log('Cashfree SDK already loaded')
-        this.cashfree = window.Cashfree({ mode: CASHFREE_CONFIG.getMode() })
+        this.cashfree = window.Cashfree({ 
+          mode: CASHFREE_CONFIG.getMode(),
+          appId: CASHFREE_CONFIG.getAppId(),
+          secretKey: CASHFREE_CONFIG.getSecretKey()
+        })
         resolve(this.cashfree)
         return
       }
@@ -67,8 +74,13 @@ export class CashfreeManager {
       script.onload = () => {
         console.log('Cashfree SDK loaded successfully')
         try {
-          this.cashfree = window.Cashfree({ mode: CASHFREE_CONFIG.getMode() })
+          this.cashfree = window.Cashfree({ 
+            mode: CASHFREE_CONFIG.getMode(),
+            appId: CASHFREE_CONFIG.getAppId(),
+            secretKey: CASHFREE_CONFIG.getSecretKey()
+          })
           console.log('Cashfree SDK initialized with mode:', CASHFREE_CONFIG.getMode())
+          console.log('Cashfree SDK initialized with appId:', CASHFREE_CONFIG.getAppId())
           resolve(this.cashfree)
         } catch (error) {
           console.error('Error initializing Cashfree SDK:', error)
