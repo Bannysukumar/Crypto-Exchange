@@ -31,7 +31,6 @@
     "web3": "^1.8.0"
   },
   "devDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.9.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/react": "^18.2.43",
@@ -45,14 +44,10 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.5.6",
-    "rollup": "^4.9.6",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
   },
-  "resolutions": {
-    "@rollup/rollup-linux-x64-gnu": "^4.9.6"
-  },
-  "overrides": {
+  "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.9.6"
   }
 }
