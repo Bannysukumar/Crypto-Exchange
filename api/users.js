@@ -36,7 +36,8 @@ export default async function handler(req, res) {
     console.log('User ID from query:', uid);
     console.log('Email from query:', email);
     
-    if (!uid && !email) {
+    // Only validate query parameters for GET requests
+    if (req.method === 'GET' && !uid && !email) {
       console.log('No UID or email provided');
       return res.status(400).json({ error: 'User ID or email is required' });
     }
@@ -102,6 +103,16 @@ export default async function handler(req, res) {
       const userData = req.body;
       console.log('🔧 User data received:', userData);
       console.log('🔧 Email in request body:', userData.email);
+      
+      // Validate required fields for POST
+      if (!userData.uid) {
+        console.log('❌ No UID provided in request body');
+        return res.status(400).json({ error: 'User ID is required' });
+      }
+      if (!userData.email) {
+        console.log('❌ No email provided in request body');
+        return res.status(400).json({ error: 'Email is required' });
+      }
       
       try {
         const userRef = doc(db, 'users', userData.uid);
