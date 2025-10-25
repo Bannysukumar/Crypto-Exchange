@@ -62,34 +62,12 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('Error creating order:', error);
       
-      // Fallback to mock order if Cashfree API fails
-      console.log('Falling back to mock order due to error:', error.message);
-      
-      const orderId = 'order_' + Date.now();
-      const sessionId = 'session_' + orderId + '_' + Math.random().toString(36).substr(2, 9);
-      
-      const mockOrder = {
-        order_id: orderId,
-        payment_session_id: sessionId,
-        order_amount: req.body.amount || 100,
-        order_currency: 'INR',
-        order_status: 'created',
-        created_at: new Date().toISOString(),
-        customer_details: {
-          customer_id: req.body.customerId || 'customer_' + Date.now(),
-          customer_name: req.body.customerName || 'Test User',
-          customer_email: req.body.customerEmail || 'test@example.com',
-          customer_phone: req.body.customerPhone || '+1234567890'
-        },
-        order_note: 'Crypto Exchange Deposit',
-        order_tags: ['crypto', 'deposit']
-      };
-      
-      console.log('Mock order created as fallback:', mockOrder);
-      res.status(200).json({
-        success: true,
-        message: 'Order created successfully (fallback)',
-        order: mockOrder
+      // Return error instead of fallback to prevent invalid payment sessions
+      res.status(500).json({
+        success: false,
+        message: 'Failed to create order with Cashfree',
+        error: error.message,
+        details: 'Please check your Cashfree credentials and try again.'
       });
     }
   } else {

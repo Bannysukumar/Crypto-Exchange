@@ -61,8 +61,7 @@ export class CashfreeManager {
         console.log('Cashfree SDK already loaded')
         this.cashfree = window.Cashfree({ 
           mode: CASHFREE_CONFIG.getMode(),
-          appId: CASHFREE_CONFIG.getAppId(),
-          secretKey: CASHFREE_CONFIG.getSecretKey()
+          appId: CASHFREE_CONFIG.getAppId()
         })
         resolve(this.cashfree)
         return
@@ -76,8 +75,7 @@ export class CashfreeManager {
         try {
           this.cashfree = window.Cashfree({ 
             mode: CASHFREE_CONFIG.getMode(),
-            appId: CASHFREE_CONFIG.getAppId(),
-            secretKey: CASHFREE_CONFIG.getSecretKey()
+            appId: CASHFREE_CONFIG.getAppId()
           })
           console.log('Cashfree SDK initialized with mode:', CASHFREE_CONFIG.getMode())
           console.log('Cashfree SDK initialized with appId:', CASHFREE_CONFIG.getAppId())
@@ -439,6 +437,9 @@ export class CashfreeManager {
         // Use the real Cashfree SDK
         try {
           console.log('Calling Cashfree checkout with options:', checkoutOptions)
+          console.log('Cashfree SDK instance:', this.cashfree)
+          console.log('Cashfree SDK methods:', Object.keys(this.cashfree || {}))
+          
           result = await this.cashfree.checkout(checkoutOptions)
           console.log('Cashfree checkout completed, result:', result)
           
@@ -449,8 +450,19 @@ export class CashfreeManager {
           console.error('Cashfree checkout error details:', JSON.stringify(checkoutError, null, 2))
           console.error('Cashfree checkout error message:', checkoutError.message)
           console.error('Cashfree checkout error code:', checkoutError.code)
+          console.error('Cashfree checkout error stack:', checkoutError.stack)
+          console.error('Payment session ID being used:', checkoutOptions.paymentSessionId)
+          console.error('Order ID being used:', checkoutOptions.orderId)
           window.removeEventListener('focus', handleModalClose)
-          throw new Error(`Checkout failed: ${checkoutError.message || checkoutError}`)
+          
+          // Try to provide more specific error message
+          if (checkoutError.message && checkoutError.message.includes('400')) {
+            throw new Error('Invalid payment session. Please try again.')
+          } else if (checkoutError.message && checkoutError.message.includes('401')) {
+            throw new Error('Authentication failed. Please refresh and try again.')
+          } else {
+            throw new Error(`Checkout failed: ${checkoutError.message || checkoutError}`)
+          }
         }
       }
       
@@ -561,28 +573,17 @@ export class CashfreeManager {
       const endpoints = CASHFREE_CONFIG.getEndpoints()
       const response = await axios.post(endpoints.createOrder, {
         amount,
-        email: customerEmail,
-        phone: customerPhone
+        customerId,
+        customerEmail,
+        customerName: customerEmail.split('@')[0], // Use email prefix as name
+        customerPhone
       })
       
       console.log('Order created via proxy server:', response.data)
       return response.data.order
     } catch (error: any) {
       console.error('Error creating order:', error.response?.data || error.message)
-      
-      // Fallback to simulated order
-        const orderId = `order_${Date.now()}`
-      console.log(`Fallback simulated order created: ${orderId}`)
-      return {
-          order_id: orderId,
-          payment_session_id: `session_${orderId}_${Math.random().toString(36).substring(7)}`,
-          order_amount: amount,
-          customer_details: {
-            customer_id: customerId,
-            customer_email: customerEmail,
-            customer_phone: customerPhone
-          }
-      }
+      throw new Error(`Failed to create order: ${error.response?.data?.message || error.message}`)
     }
   }
 
