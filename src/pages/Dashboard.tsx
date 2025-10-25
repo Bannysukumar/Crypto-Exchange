@@ -36,13 +36,13 @@ const Dashboard: React.FC = () => {
     }
   }, [isConnected, account, checkDirectDepositsToContract])
 
-  // Auto-refresh balances every 30 seconds when connected
+  // Auto-refresh balances every 2 minutes when connected (reduced frequency)
   useEffect(() => {
     if (isConnected && account) {
       const interval = setInterval(() => {
         checkDirectDepositsToContract()
         refreshUserProfile()
-      }, 30000) // Check every 30 seconds
+      }, 120000) // Check every 2 minutes instead of 30 seconds
       
       return () => clearInterval(interval)
     }

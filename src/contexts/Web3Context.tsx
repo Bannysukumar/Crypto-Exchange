@@ -58,6 +58,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isConnected, setIsConnected] = useState(false)
   const [chainId, setChainId] = useState<string | null>(null)
   const [contract, setContract] = useState<any>(null)
+  const [isScanning, setIsScanning] = useState(false) // Add scanning state to prevent multiple simultaneous scans
   
   const { currentUser, updateUserProfile } = useAuth()
 
@@ -242,6 +243,14 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       return
     }
 
+    // Prevent multiple simultaneous scans
+    if (isScanning) {
+      console.log('⏳ Scan already in progress, skipping...')
+      return
+    }
+
+    setIsScanning(true)
+
     try {
       console.log('🔍 Checking for direct deposits to contract...')
       console.log('Current account:', account)
@@ -253,9 +262,9 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Contract addresses:', { contractAddress, usdtAddress, bxcAddress })
 
-      // Get recent blocks to check for transfers - scan more blocks for better detection
+      // Get recent blocks to check for transfers - scan fewer blocks for better performance
       const latestBlock = await web3.eth.getBlockNumber()
-      const fromBlock = Math.max(0, latestBlock - 5000) // Check last 5000 blocks for better coverage
+      const fromBlock = Math.max(0, latestBlock - 100) // Check last 100 blocks only for better performance
 
       console.log(`Scanning blocks ${fromBlock} to ${latestBlock} (${latestBlock - fromBlock} blocks)`)
 
@@ -349,6 +358,8 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
     } catch (error) {
       console.error('Error checking direct deposits:', error)
+    } finally {
+      setIsScanning(false) // Always reset scanning state
     }
   }
 
