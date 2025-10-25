@@ -54,6 +54,27 @@ export class TransactionService {
       const result = await firebaseService.createTransaction(firebaseTransaction)
       console.log('🔧 firebaseService.createTransaction result:', result)
       
+      // Also log to history collection
+      try {
+        console.log('🔧 Also logging to history collection...')
+        const { HistoryService } = await import('./history')
+        await HistoryService.logHistoryEntry({
+          userId: transaction.userId,
+          type: mapTransactionType(transaction.type),
+          amount: transaction.amount,
+          currency: transaction.currency,
+          description: transaction.description,
+          status: transaction.status as 'pending' | 'completed' | 'failed',
+          orderId: transaction.orderId,
+          paymentId: transaction.paymentId,
+          txHash: transaction.txHash
+        })
+        console.log('🔧 History entry logged successfully')
+      } catch (historyError) {
+        console.error('❌ Error logging to history collection:', historyError)
+        // Don't throw error, just log it
+      }
+      
       const transactionId = result._id?.toString() || ''
       console.log('🔧 Returning transaction ID:', transactionId)
       return transactionId

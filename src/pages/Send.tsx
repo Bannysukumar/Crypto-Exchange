@@ -32,8 +32,18 @@ const Send: React.FC = () => {
 
     try {
       setTransfersLoading(true)
-      const transfers = await TransactionService.getUserTransactions(currentUser.uid, 'transfer', 10)
-      setRecentTransfers(transfers)
+      console.log('🔍 Loading recent transfers for user:', currentUser.uid)
+      
+      // Get both send and receive transactions for transfers
+      const sends = await TransactionService.getUserTransactions(currentUser.uid, 'send', 10)
+      const receives = await TransactionService.getUserTransactions(currentUser.uid, 'receive', 10)
+      
+      // Combine and sort by timestamp
+      const allTransfers = [...sends, ...receives]
+      allTransfers.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      
+      console.log('🔍 Found transfers:', allTransfers.length, allTransfers)
+      setRecentTransfers(allTransfers.slice(0, 10))
     } catch (error) {
       console.error('Error loading recent transfers:', error)
       toast.error('Error loading recent transfers')
@@ -121,6 +131,7 @@ const Send: React.FC = () => {
       }
 
       // Log transactions for both users
+      console.log('🔧 Logging sender transaction...')
       await TransactionService.logTransaction({
         userId: currentUser!.uid,
         type: 'transfer',
@@ -130,6 +141,7 @@ const Send: React.FC = () => {
         status: 'completed'
       })
 
+      console.log('🔧 Logging recipient transaction...')
       await TransactionService.logTransaction({
         userId: recipient.uid,
         type: 'transfer',
@@ -138,6 +150,8 @@ const Send: React.FC = () => {
         description: `Received ₹${amount} from ${currentUser!.email}${description ? ': ' + description : ''}`,
         status: 'completed'
       })
+
+      console.log('🔧 Transactions logged successfully')
 
       toast.dismiss('inr-send-toast')
       toast.success(`Successfully sent ₹${amount} to ${recipientEmail}`)
