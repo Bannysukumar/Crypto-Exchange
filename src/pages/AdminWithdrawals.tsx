@@ -8,10 +8,10 @@ import toast from 'react-hot-toast'
 
 // Admin credentials
 const ADMIN_CREDENTIALS = {
-  uid: "zgtQXvwBhMbHR4FcdduoNF7sbhl1",
-  email: "vaibhav.admin@gmail.com",
-  displayName: "Vaibhav Admin",
-  password: "Vaibhav1234"
+  uid: "s7bNoiTDlLUmlZOj8fIFT6LWXGk2",
+  email: "bannysukumar@gmail.com",
+  displayName: "Banny Admin",
+  password: "Banny2255@@##"
 }
 
 interface PendingWithdrawal {
