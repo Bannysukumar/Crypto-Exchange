@@ -75,6 +75,19 @@ const History: React.FC = () => {
       console.log('🔍 History docs:', result.historyCollection?.docs)
       console.log('🔍 Transaction docs:', result.transactionsCollection?.docs)
       
+      // Show first few documents to see the structure
+      if (result.historyCollection?.docs?.length > 0) {
+        console.log('🔍 First history doc:', result.historyCollection.docs[0])
+        console.log('🔍 History doc userId:', result.historyCollection.docs[0]?.data?.userId)
+      }
+      
+      if (result.transactionsCollection?.docs?.length > 0) {
+        console.log('🔍 First transaction doc:', result.transactionsCollection.docs[0])
+        console.log('🔍 Transaction doc userId:', result.transactionsCollection.docs[0]?.data?.userId)
+      }
+      
+      console.log('🔍 Current user ID:', currentUser?.uid)
+      
       toast.success(`Debug: History: ${result.historyCollection.totalDocs}, Transactions: ${result.transactionsCollection.totalDocs}`)
     } catch (error) {
       console.error('❌ Debug failed:', error)
