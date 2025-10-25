@@ -210,6 +210,7 @@ const History: React.FC = () => {
       console.log('🔧 Adding multiple test transactions...')
       
       // Test deposit
+      console.log('🔧 Creating BXC deposit transaction...')
       await TransactionService.logTransaction({
         userId: currentUser.uid,
         type: 'deposit',
@@ -218,8 +219,10 @@ const History: React.FC = () => {
         description: 'Test BXC deposit',
         status: 'completed'
       })
+      console.log('✅ BXC deposit transaction created')
       
       // Test withdrawal
+      console.log('🔧 Creating BTC withdrawal transaction...')
       await TransactionService.logTransaction({
         userId: currentUser.uid,
         type: 'withdrawal',
@@ -228,8 +231,10 @@ const History: React.FC = () => {
         description: 'Test BTC withdrawal',
         status: 'completed'
       })
+      console.log('✅ BTC withdrawal transaction created')
       
       // Test send
+      console.log('🔧 Creating USDT send transaction...')
       await TransactionService.logTransaction({
         userId: currentUser.uid,
         type: 'send',
@@ -238,8 +243,10 @@ const History: React.FC = () => {
         description: 'Test USDT send',
         status: 'completed'
       })
+      console.log('✅ USDT send transaction created')
       
       // Test receive
+      console.log('🔧 Creating BXC receive transaction...')
       await TransactionService.logTransaction({
         userId: currentUser.uid,
         type: 'receive',
@@ -248,6 +255,7 @@ const History: React.FC = () => {
         description: 'Test BXC receive',
         status: 'completed'
       })
+      console.log('✅ BXC receive transaction created')
       
       console.log('🔧 Multiple test transactions added, reloading...')
       await loadTransactions()
@@ -255,6 +263,46 @@ const History: React.FC = () => {
     } catch (error) {
       console.error('❌ Error adding multiple test transactions:', error)
       toast.error('Failed to add test transactions')
+    }
+  }
+
+  // Force create a transaction directly in Firebase (for debugging)
+  const forceCreateTransaction = async () => {
+    if (!currentUser) return
+    
+    try {
+      console.log('🔧 Force creating transaction directly in Firebase...')
+      
+      // Create transaction directly using the API
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.uid,
+          type: 'deposit',
+          amount: 100,
+          currency: 'BXC',
+          description: 'Force created BXC deposit',
+          status: 'completed',
+          timestamp: new Date()
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('✅ Force transaction created:', result)
+        await loadTransactions()
+        toast.success('Force transaction created!')
+      } else {
+        const error = await response.text()
+        console.error('❌ Force transaction failed:', error)
+        toast.error('Force transaction failed: ' + error)
+      }
+    } catch (error) {
+      console.error('❌ Error force creating transaction:', error)
+      toast.error('Failed to force create transaction')
     }
   }
 
@@ -563,6 +611,19 @@ const History: React.FC = () => {
                     }}
                   >
                     Add Multiple Test Transactions
+                  </button>
+                  <button
+                    onClick={forceCreateTransaction}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      background: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Force Create Transaction
                   </button>
             </div>
           </div>

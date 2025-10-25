@@ -415,7 +415,9 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
           setProcessedTransactions(prev => new Set(prev).add(txHash))
           
           // Log the transaction
+          console.log(`🔧 About to log transaction:`, { type: 'deposit', amount, tokenType, txHash })
           await logTransaction('deposit', amount, tokenType, `Direct ${tokenType} deposit to contract`, txHash)
+          console.log(`✅ Transaction logging completed for ${tokenType} deposit`)
           
           // Update user balance
           console.log(`💳 Updating ${tokenType} balance: +${amount}`)
