@@ -77,7 +77,7 @@ export const CASHFREE_CONFIG = {
   getEndpoints() {
     // Use the combined server for both local and production
     const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://mongodb-2-mr18.onrender.com/api'
+      ? 'https://crypto-exchange-api-server.vercel.app/api'
       : 'http://localhost:5000/api';
     
     return {
