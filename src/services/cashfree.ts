@@ -407,7 +407,8 @@ export class CashfreeManager {
         
         const checkoutOptions = {
           paymentSessionId: orderDetails.payment_session_id,
-          redirectTarget: '_modal'
+          redirectTarget: '_modal',
+          orderId: orderDetails.order_id
         }
 
         console.log('Initiating real Cashfree checkout with options:', checkoutOptions)
@@ -445,6 +446,9 @@ export class CashfreeManager {
           window.removeEventListener('focus', handleModalClose)
         } catch (checkoutError: any) {
           console.error('Cashfree checkout error:', checkoutError)
+          console.error('Cashfree checkout error details:', JSON.stringify(checkoutError, null, 2))
+          console.error('Cashfree checkout error message:', checkoutError.message)
+          console.error('Cashfree checkout error code:', checkoutError.code)
           window.removeEventListener('focus', handleModalClose)
           throw new Error(`Checkout failed: ${checkoutError.message || checkoutError}`)
         }
