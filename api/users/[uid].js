@@ -22,6 +22,8 @@ async function connectToDatabase() {
 }
 
 export default async function handler(req, res) {
+  console.log('API Users endpoint called:', req.method, req.url, req.query);
+  
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
