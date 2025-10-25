@@ -59,6 +59,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [chainId, setChainId] = useState<string | null>(null)
   const [contract, setContract] = useState<any>(null)
   const [isScanning, setIsScanning] = useState(false) // Add scanning state to prevent multiple simultaneous scans
+  const [processedTransactions, setProcessedTransactions] = useState<Set<string>>(new Set()) // Track processed transactions
   
   const { currentUser, updateUserProfile } = useAuth()
 
@@ -262,9 +263,9 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Contract addresses:', { contractAddress, usdtAddress, bxcAddress })
 
-      // Get recent blocks to check for transfers - scan fewer blocks for better performance
+      // Get recent blocks to check for transfers - scan fewer blocks to prevent duplicates
       const latestBlock = await web3.eth.getBlockNumber()
-      const fromBlock = Math.max(0, latestBlock - 100) // Check last 100 blocks only for better performance
+      const fromBlock = Math.max(0, latestBlock - 50) // Check last 50 blocks only to prevent duplicates
 
       console.log(`Scanning blocks ${fromBlock} to ${latestBlock} (${latestBlock - fromBlock} blocks)`)
 
@@ -388,12 +389,23 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         
         console.log(`💰 Detected direct ${tokenType} deposit: ${amount} from ${from}`)
         
-        // Check if this transaction was already processed
+        // Check if this transaction was already processed (local cache + database)
         const txHash = transfer.transactionHash
+        
+        // First check local cache for immediate duplicate prevention
+        if (processedTransactions.has(txHash)) {
+          console.log(`⏭️ Skipping duplicate ${tokenType} transaction (local cache): ${txHash}`)
+          return
+        }
+        
+        // Then check database for persistent duplicate prevention
         const existingTx = await TransactionService.getTransactionByHash(currentUser.uid, txHash)
         
         if (!existingTx) {
           console.log(`📝 Logging new ${tokenType} transaction: ${amount}`)
+          
+          // Add to local cache immediately to prevent race conditions
+          setProcessedTransactions(prev => new Set(prev).add(txHash))
           
           // Log the transaction
           await logTransaction('deposit', amount, tokenType, `Direct ${tokenType} deposit to contract`, txHash)
@@ -410,7 +422,9 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
           
           console.log(`✅ Successfully processed ${tokenType} deposit`)
         } else {
-          console.log(`⏭️ Skipping duplicate ${tokenType} transaction: ${txHash}`)
+          console.log(`⏭️ Skipping duplicate ${tokenType} transaction (database): ${txHash}`)
+          // Add to local cache even if it's a duplicate to prevent future processing
+          setProcessedTransactions(prev => new Set(prev).add(txHash))
         }
       } else {
         console.log(`❌ Transfer not from current user or not to contract`)
@@ -521,14 +535,14 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
     console.log('🚀 Starting transaction monitoring...')
     
-    // Check for deposits every 2 minutes (reduced frequency for better performance)
+    // Check for deposits every 5 minutes (further reduced frequency to prevent duplicates)
     const monitoringInterval = setInterval(async () => {
       try {
         await checkDirectDepositsToContract()
       } catch (error) {
         console.error('Transaction monitoring error:', error)
       }
-    }, 120000) // 2 minutes instead of 30 seconds
+    }, 300000) // 5 minutes to prevent duplicate processing
 
     // Store interval ID for cleanup
     ;(window as any).transactionMonitoringInterval = monitoringInterval
