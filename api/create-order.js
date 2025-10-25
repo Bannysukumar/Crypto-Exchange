@@ -84,7 +84,7 @@ export default async function handler(req, res) {
       
       const mockOrder = {
         order_id: 'order_' + Date.now(),
-        payment_session_id: 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        payment_session_id: 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
         order_amount: req.body.amount || 100,
         order_currency: 'INR',
         order_status: 'created',

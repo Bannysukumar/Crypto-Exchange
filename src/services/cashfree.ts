@@ -596,7 +596,7 @@ export class CashfreeManager {
     try {
       // Always use demo server as proxy to avoid CORS issues
       const endpoints = CASHFREE_CONFIG.getEndpoints()
-      const response = await axios.get(`${endpoints.orderStatus}/${orderId}`)
+      const response = await axios.get(`${endpoints.orderStatus}?orderId=${orderId}`)
       return response.data
     } catch (error: any) {
       console.error('Error checking order status:', error.response?.data || error.message)
