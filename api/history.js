@@ -33,6 +33,7 @@ export default async function handler(req, res) {
     console.log('🔍 History API called:', req.method, req.url, req.query);
     console.log('🔍 Request body:', req.body);
     console.log('🔍 Request headers:', req.headers);
+    console.log('🔍 History API is working!');
     
     if (req.method === 'GET') {
       const { userId, type, limit } = req.query;
@@ -40,6 +41,16 @@ export default async function handler(req, res) {
       console.log('🔍 Fetching history from Firestore for user:', userId, 'type:', type, 'limit:', limit);
       console.log('🔍 Firebase config:', firebaseConfig);
       console.log('🔍 Database instance:', db);
+      
+      // Test endpoint - return simple response
+      if (req.url === '/api/history/test') {
+        console.log('🔍 Test endpoint called');
+        return res.status(200).json({ 
+          message: 'History API is working!', 
+          timestamp: new Date().toISOString(),
+          userId: userId || 'no-user-id'
+        });
+      }
       
       if (!userId) {
         console.log('❌ No userId provided');
