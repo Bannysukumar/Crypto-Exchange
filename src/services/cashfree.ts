@@ -550,7 +550,7 @@ export class CashfreeManager {
       })
       
       console.log('Order created via proxy server:', response.data)
-      return response.data
+      return response.data.order
     } catch (error: any) {
       console.error('Error creating order:', error.response?.data || error.message)
       

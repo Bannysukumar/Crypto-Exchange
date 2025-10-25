@@ -21,20 +21,20 @@ export default function handler(req, res) {
     const sessionId = 'session_' + orderId + '_' + Math.random().toString(36).substr(2, 9);
     
     const mockOrder = {
-      orderId: orderId,
-      sessionId: sessionId,
-      amount: req.body.amount || 100,
-      currency: req.body.currency || 'INR',
-      status: 'created',
-      createdAt: new Date().toISOString(),
-      customerDetails: req.body.customerDetails || {
-        customerId: 'customer_' + Date.now(),
-        customerName: 'Test User',
-        customerEmail: 'test@example.com',
-        customerPhone: '+1234567890'
+      order_id: orderId,
+      payment_session_id: sessionId,
+      order_amount: req.body.amount || 100,
+      order_currency: req.body.currency || 'INR',
+      order_status: 'created',
+      created_at: new Date().toISOString(),
+      customer_details: req.body.customerDetails || {
+        customer_id: 'customer_' + Date.now(),
+        customer_name: 'Test User',
+        customer_email: 'test@example.com',
+        customer_phone: '+1234567890'
       },
-      orderNote: req.body.orderNote || 'Crypto Exchange Deposit',
-      orderTags: req.body.orderTags || ['crypto', 'deposit']
+      order_note: req.body.orderNote || 'Crypto Exchange Deposit',
+      order_tags: req.body.orderTags || ['crypto', 'deposit']
     };
     
     console.log('Order created successfully:', mockOrder);
