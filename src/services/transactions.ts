@@ -1,5 +1,5 @@
-import { mongoDBService } from './mongodb'
-import type { Transaction as MongoDBTransaction } from './api'
+import { firebaseService } from './firebase'
+import type { Transaction as FirebaseTransaction } from './api'
 
 export interface Transaction {
   id?: string
@@ -21,7 +21,7 @@ export interface Transaction {
 export class TransactionService {
   static async logTransaction(transaction: Omit<Transaction, 'id' | 'timestamp'>): Promise<string> {
     try {
-      const mongoTransaction: Omit<MongoDBTransaction, '_id'> = {
+      const firebaseTransaction: Omit<FirebaseTransaction, '_id'> = {
         userId: transaction.userId,
         type: transaction.type as 'deposit' | 'withdraw' | 'send' | 'receive',
         amount: transaction.amount,
@@ -34,7 +34,7 @@ export class TransactionService {
         timestamp: new Date()
       }
 
-      const result = await mongoDBService.createTransaction(mongoTransaction)
+      const result = await firebaseService.createTransaction(firebaseTransaction)
       return result._id?.toString() || ''
     } catch (error) {
       console.error('Error logging transaction:', error)
@@ -48,7 +48,7 @@ export class TransactionService {
     limitCount: number = 50
   ): Promise<Transaction[]> {
     try {
-      const mongoTransactions = await mongoDBService.getUserTransactions(
+      const firebaseTransactions = await firebaseService.getUserTransactions(
         userId,
         transactionType,
         limitCount

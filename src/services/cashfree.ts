@@ -1,6 +1,6 @@
 import { CASHFREE_CONFIG } from '../config/cashfree'
 import { auth } from '../config/firebase'
-import { mongoDBService } from './mongodb'
+import { firebaseService } from './firebase'
 import toast from 'react-hot-toast'
 import axios from 'axios'
 
@@ -602,7 +602,7 @@ export class CashfreeManager {
   private async handlePaymentSuccess(orderId: string, paymentId: string, amount: number, currency: string, userId: string, status: string, description: string): Promise<void> {
     try {
       // Log transaction
-      await mongoDBService.createTransaction({
+      await firebaseService.createTransaction({
         userId,
         type: 'deposit',
         amount,
@@ -615,7 +615,7 @@ export class CashfreeManager {
       })
 
       // Update user's INR balance
-      await mongoDBService.updateUserBalance(userId, currency, amount)
+      await firebaseService.updateUserBalance(userId, currency, amount)
       console.log(`User ${userId} ${currency} balance updated by ${amount}`)
       
       // Dispatch a custom event to notify components to refresh balances
@@ -630,7 +630,7 @@ export class CashfreeManager {
     try {
       // Log failed transaction
       const userId = auth.currentUser?.uid || 'unknown'
-      await mongoDBService.createTransaction({
+      await firebaseService.createTransaction({
         userId,
         type: 'deposit',
         amount: this.currentOrder?.order_amount || 0,

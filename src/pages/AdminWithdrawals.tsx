@@ -256,10 +256,10 @@ const AdminWithdrawals: React.FC = () => {
       console.log('Crypto-to-INR withdrawal transaction successful:', tx)
 
       // Import MongoDB service to update user balance
-      const { mongoDBService } = await import('../services/mongodb')
+      const { firebaseService } = await import('../services/firebase')
       
       // Deduct crypto balance from user (after successful smart contract execution)
-      await mongoDBService.updateUserBalance(
+      await firebaseService.updateUserBalance(
         withdrawal.userId, 
         withdrawal.crypto, 
         -withdrawal.cryptoAmount

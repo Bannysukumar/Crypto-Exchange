@@ -3,7 +3,7 @@ import Web3 from 'web3'
 import { CONTRACT_CONFIG, CRYPTO_WALLET_ABI, BXC_TOKEN_ABI, ERC20_ABI } from '../config/contracts'
 import { useAuth } from './AuthContext'
 import { TransactionService } from '../services/transactions'
-import { mongoDBService } from '../services/mongodb'
+import { firebaseService } from '../services/firebase'
 import toast from 'react-hot-toast'
 
 declare global {
@@ -478,7 +478,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       // Get current user profile
-      const currentProfile = await mongoDBService.getUserByUid(currentUser.uid)
+      const currentProfile = await firebaseService.getUserByUid(currentUser.uid)
       if (!currentProfile) {
         console.error('User profile not found')
         return
@@ -633,7 +633,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       // Get current user profile to access existing balances
-      const currentProfile = await mongoDBService.getUserByUid(currentUser.uid)
+      const currentProfile = await firebaseService.getUserByUid(currentUser.uid)
       if (!currentProfile) {
         console.error('User profile not found')
         return
