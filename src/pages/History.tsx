@@ -61,6 +61,22 @@ const History: React.FC = () => {
     }
   }
 
+  // Debug function to check collections
+  const debugCollections = async () => {
+    try {
+      console.log('🔍 Testing debug endpoint...')
+      
+      const response = await fetch('/api/history/debug')
+      const result = await response.json()
+      
+      console.log('🔍 Debug result:', result)
+      toast.success(`Debug: History: ${result.historyCollection.totalDocs}, Transactions: ${result.transactionsCollection.totalDocs}`)
+    } catch (error) {
+      console.error('❌ Debug failed:', error)
+      toast.error('Debug failed: ' + error.message)
+    }
+  }
+
   const loadTransactions = useCallback(async () => {
     if (!currentUser) {
       navigate('/')
@@ -500,19 +516,32 @@ const History: React.FC = () => {
               >
                 Export CSV
               </button>
-              <button
-                onClick={testCreateHistoryEntry}
-                style={{
-                  padding: '0.75rem 1rem',
-                  background: '#dc3545',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer'
-                }}
-              >
-                Test History API
-              </button>
+                <button
+                  onClick={testCreateHistoryEntry}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    background: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Test History API
+                </button>
+                <button
+                  onClick={debugCollections}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    background: '#6f42c1',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Debug Collections
+                </button>
             </div>
           </div>
         </div>

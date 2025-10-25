@@ -54,6 +54,54 @@ export default async function handler(req, res) {
         });
       }
       
+      // Debug endpoint - return collection stats
+      if (req.url === '/api/history/debug') {
+        console.log('🔍 Debug endpoint called');
+        
+        try {
+          // Get all history documents
+          const allHistoryQuery = query(collection(db, 'history'));
+          const allHistorySnapshot = await getDocs(allHistoryQuery);
+          
+          // Get all transaction documents  
+          const allTransactionsQuery = query(collection(db, 'transactions'));
+          const allTransactionsSnapshot = await getDocs(allTransactionsQuery);
+          
+          const historyDocs = [];
+          allHistorySnapshot.forEach((doc) => {
+            historyDocs.push({
+              id: doc.id,
+              data: doc.data()
+            });
+          });
+          
+          const transactionDocs = [];
+          allTransactionsSnapshot.forEach((doc) => {
+            transactionDocs.push({
+              id: doc.id,
+              data: doc.data()
+            });
+          });
+          
+          return res.status(200).json({
+            message: 'Debug info',
+            historyCollection: {
+              totalDocs: allHistorySnapshot.size,
+              docs: historyDocs
+            },
+            transactionsCollection: {
+              totalDocs: allTransactionsSnapshot.size,
+              docs: transactionDocs
+            }
+          });
+        } catch (error) {
+          return res.status(500).json({
+            error: 'Debug failed',
+            message: error.message
+          });
+        }
+      }
+      
       
       if (!userId) {
         console.log('❌ No userId provided');
