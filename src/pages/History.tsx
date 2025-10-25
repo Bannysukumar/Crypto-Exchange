@@ -25,13 +25,21 @@ const History: React.FC = () => {
       navigate('/')
       return
     }
+    
+    console.log('🔍 History page - Loading transactions for user:', currentUser.uid)
     setLoading(true)
+    
     try {
+      console.log('🔍 Calling TransactionService.getUserTransactions...')
       const fetchedTransactions = await TransactionService.getUserTransactions(currentUser.uid, undefined, 100)
+      console.log('🔍 Fetched transactions:', fetchedTransactions.length, fetchedTransactions)
+      
       setTransactions(fetchedTransactions)
       setFilteredTransactions(fetchedTransactions)
+      
+      console.log('🔍 Transactions set in state:', fetchedTransactions.length)
     } catch (error) {
-      console.error('Error loading transactions:', error)
+      console.error('❌ Error loading transactions:', error)
       toast.error('Error loading transactions')
       setTransactions([])
       setFilteredTransactions([])
@@ -41,6 +49,7 @@ const History: React.FC = () => {
   }, [currentUser, navigate])
 
   useEffect(() => {
+    console.log('🔍 History page - useEffect triggered, loading transactions...')
     loadTransactions()
   }, [loadTransactions])
 
@@ -109,13 +118,28 @@ const History: React.FC = () => {
   }
 
   const getTransactionStats = () => {
+    console.log('🔍 Calculating transaction stats from transactions:', transactions.length, transactions)
+    
+    const deposits = transactions.filter(t => t.type === 'deposit')
+    const withdrawals = transactions.filter(t => t.type === 'withdrawal')
+    const transfers = transactions.filter(t => t.type === 'transfer')
+    
+    console.log('🔍 Transaction type breakdown:', {
+      deposits: deposits.length,
+      withdrawals: withdrawals.length,
+      transfers: transfers.length,
+      total: transactions.length
+    })
+    
     const stats = {
       totalTransactions: transactions.length,
-      totalDeposits: transactions.filter(t => t.type === 'deposit').length,
-      totalWithdrawals: transactions.filter(t => t.type === 'withdrawal').length,
-      totalTransfers: transactions.filter(t => t.type === 'transfer').length,
+      totalDeposits: deposits.length,
+      totalWithdrawals: withdrawals.length,
+      totalTransfers: transfers.length,
       totalVolume: transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0)
     }
+    
+    console.log('🔍 Final stats:', stats)
     return stats
   }
 
