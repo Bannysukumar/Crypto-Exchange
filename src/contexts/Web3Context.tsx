@@ -657,29 +657,39 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!currentUser) return
 
     try {
-      // Get current user profile to access existing balances
-      const currentProfile = await firebaseService.getUserByUid(currentUser.uid)
-      if (!currentProfile) {
-        console.error('User profile not found')
-        return
-      }
-
-      const currentBalances = currentProfile.cryptoBalances || { BTC: 0, USDT: 0, BXC: 0 }
+      console.log(`💳 Updating ${currency} balance: +${amountToAdd}`)
       
-      // Add the new amount to existing balance
-      const updatedBalances = {
-        BTC: currency === 'BTC' ? currentBalances.BTC + amountToAdd : currentBalances.BTC,
-        USDT: currency === 'USDT' ? currentBalances.USDT + amountToAdd : currentBalances.USDT,
-        BXC: currency === 'BXC' ? currentBalances.BXC + amountToAdd : currentBalances.BXC
-      }
-
-      await updateUserProfile({
-        cryptoBalances: updatedBalances
-      })
-
-      console.log(`✅ Updated ${currency} balance: ${currentBalances[currency as keyof typeof currentBalances]} + ${amountToAdd} = ${updatedBalances[currency as keyof typeof updatedBalances]}`)
+      // Use the API service to update balance directly
+      await firebaseService.updateUserBalance(currentUser.uid, currency, amountToAdd)
+      
+      console.log(`✅ Successfully updated ${currency} balance by ${amountToAdd}`)
     } catch (error) {
       console.error('Error updating crypto balance:', error)
+      // Try to create the user if they don't exist
+      try {
+        console.log('🔧 User might not exist, attempting to create user profile...')
+        const newUserData = {
+          uid: currentUser.uid,
+          email: currentUser.email || '',
+          displayName: currentUser.displayName || '',
+          name: currentUser.displayName || '',
+          phone: '',
+          inrBalance: 0,
+          cryptoBalances: {
+            BTC: 0,
+            USDT: 0,
+            BXC: 0
+          }
+        }
+        await firebaseService.createUser(newUserData)
+        console.log('✅ User created successfully')
+        
+        // Try balance update again
+        await firebaseService.updateUserBalance(currentUser.uid, currency, amountToAdd)
+        console.log(`✅ Successfully updated ${currency} balance after creating user`)
+      } catch (createError) {
+        console.error('Error creating user and updating balance:', createError)
+      }
     }
   }
 
