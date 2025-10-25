@@ -35,13 +35,26 @@ const Profile: React.FC = () => {
       return
     }
 
+    console.log('🔍 Profile page - currentUser:', currentUser)
+    console.log('🔍 Profile page - userProfile:', userProfile)
+
     if (userProfile) {
+      console.log('🔍 Setting profile data from userProfile:', userProfile)
       setProfileData({
         displayName: currentUser.displayName || '',
         name: userProfile.name || '',
         email: userProfile.email || currentUser.email || '',
         phone: userProfile.phone || '',
         address: userProfile.address || ''
+      })
+    } else {
+      console.log('🔍 No userProfile, using currentUser data only')
+      setProfileData({
+        displayName: currentUser.displayName || '',
+        name: '',
+        email: currentUser.email || '',
+        phone: '',
+        address: ''
       })
     }
 
@@ -51,25 +64,38 @@ const Profile: React.FC = () => {
   const loadUserStats = async () => {
     if (!currentUser) return
 
+    console.log('🔍 Loading user stats for user:', currentUser.uid)
+
     try {
       const transactions = await TransactionService.getUserTransactions(currentUser.uid, undefined, 1000)
+      console.log('🔍 Fetched transactions:', transactions.length, transactions)
       
       const deposits = transactions.filter(t => t.type === 'deposit').length
       const withdrawals = transactions.filter(t => t.type === 'withdrawal').length
       const transfers = transactions.filter(t => t.type === 'transfer').length
       
+      console.log('🔍 Transaction counts:', { deposits, withdrawals, transfers })
+      
       const accountAge = currentUser.metadata.creationTime 
         ? Math.floor((Date.now() - new Date(currentUser.metadata.creationTime).getTime()) / (1000 * 60 * 60 * 24))
         : 0
 
-      setStats({
+      console.log('🔍 Account age calculation:', {
+        creationTime: currentUser.metadata.creationTime,
+        accountAge
+      })
+
+      const statsData = {
         totalDeposits: deposits,
         totalWithdrawals: withdrawals,
         totalTransfers: transfers,
         accountAge
-      })
+      }
+
+      console.log('🔍 Setting stats:', statsData)
+      setStats(statsData)
     } catch (error) {
-      console.error('Error loading user stats:', error)
+      console.error('❌ Error loading user stats:', error)
     }
   }
 
