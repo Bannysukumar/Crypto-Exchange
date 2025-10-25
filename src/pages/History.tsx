@@ -16,6 +16,7 @@ const History: React.FC = () => {
   const [dateRange, setDateRange] = useState('all')
   const [statusFilter, setStatusFilter] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [showTestDataButton, setShowTestDataButton] = useState(false)
 
   const { currentUser, userProfile } = useAuth()
   const navigate = useNavigate()
@@ -36,6 +37,9 @@ const History: React.FC = () => {
       
       setTransactions(fetchedTransactions)
       setFilteredTransactions(fetchedTransactions)
+      
+      // Show test data button if no transactions exist
+      setShowTestDataButton(fetchedTransactions.length === 0)
       
       console.log('🔍 Transactions set in state:', fetchedTransactions.length)
     } catch (error) {
@@ -115,6 +119,66 @@ const History: React.FC = () => {
     setDateRange('all')
     setStatusFilter('')
     setSearchTerm('')
+  }
+
+  const createTestTransactions = async () => {
+    if (!currentUser) return
+
+    try {
+      console.log('🔍 Creating test transactions...')
+      toast.loading('Creating test transactions...', { id: 'test-transactions' })
+      
+      // Create test deposit transaction
+      await TransactionService.logTransaction({
+        userId: currentUser.uid,
+        type: 'deposit',
+        amount: 1000,
+        currency: 'INR',
+        description: 'Test INR deposit',
+        status: 'completed'
+      })
+
+      // Create test withdrawal transaction
+      await TransactionService.logTransaction({
+        userId: currentUser.uid,
+        type: 'withdrawal',
+        amount: 500,
+        currency: 'INR',
+        description: 'Test INR withdrawal',
+        status: 'completed'
+      })
+
+      // Create test transfer transaction
+      await TransactionService.logTransaction({
+        userId: currentUser.uid,
+        type: 'transfer',
+        amount: 200,
+        currency: 'INR',
+        description: 'Test INR transfer',
+        status: 'completed'
+      })
+
+      // Create test crypto deposit
+      await TransactionService.logTransaction({
+        userId: currentUser.uid,
+        type: 'deposit',
+        amount: 0.001,
+        currency: 'BTC',
+        description: 'Test BTC deposit',
+        status: 'completed'
+      })
+
+      console.log('✅ Test transactions created successfully')
+      toast.dismiss('test-transactions')
+      toast.success('Test transactions created!')
+      
+      // Reload transactions
+      await loadTransactions()
+    } catch (error) {
+      console.error('❌ Error creating test transactions:', error)
+      toast.dismiss('test-transactions')
+      toast.error('Failed to create test transactions')
+    }
   }
 
   const getTransactionStats = () => {
@@ -465,6 +529,28 @@ const History: React.FC = () => {
           ) : filteredTransactions.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <p style={{ color: '#666' }}>No transactions found matching your criteria.</p>
+              {showTestDataButton && (
+                <div style={{ marginTop: '1rem' }}>
+                  <p style={{ color: '#666', marginBottom: '1rem' }}>
+                    No transactions exist yet. Create some test data to see how the system works.
+                  </p>
+                  <button
+                    onClick={createTestTransactions}
+                    style={{
+                      background: '#007bff',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '1rem',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Create Test Transactions
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <>
