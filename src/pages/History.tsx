@@ -202,6 +202,62 @@ const History: React.FC = () => {
     }
   }
 
+  // Add multiple test transactions for different types
+  const addMultipleTestTransactions = async () => {
+    if (!currentUser) return
+    
+    try {
+      console.log('🔧 Adding multiple test transactions...')
+      
+      // Test deposit
+      await TransactionService.logTransaction({
+        userId: currentUser.uid,
+        type: 'deposit',
+        amount: 50,
+        currency: 'BXC',
+        description: 'Test BXC deposit',
+        status: 'completed'
+      })
+      
+      // Test withdrawal
+      await TransactionService.logTransaction({
+        userId: currentUser.uid,
+        type: 'withdrawal',
+        amount: 25,
+        currency: 'BTC',
+        description: 'Test BTC withdrawal',
+        status: 'completed'
+      })
+      
+      // Test send
+      await TransactionService.logTransaction({
+        userId: currentUser.uid,
+        type: 'send',
+        amount: 10,
+        currency: 'USDT',
+        description: 'Test USDT send',
+        status: 'completed'
+      })
+      
+      // Test receive
+      await TransactionService.logTransaction({
+        userId: currentUser.uid,
+        type: 'receive',
+        amount: 15,
+        currency: 'BXC',
+        description: 'Test BXC receive',
+        status: 'completed'
+      })
+      
+      console.log('🔧 Multiple test transactions added, reloading...')
+      await loadTransactions()
+      toast.success('Multiple test transactions added!')
+    } catch (error) {
+      console.error('❌ Error adding multiple test transactions:', error)
+      toast.error('Failed to add test transactions')
+    }
+  }
+
   // Pagination
   const indexOfLastTransaction = currentPage * transactionsPerPage
   const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage
@@ -482,19 +538,32 @@ const History: React.FC = () => {
               >
                 Export CSV
               </button>
-              <button
-                onClick={addTestTransaction}
-                style={{
-                  padding: '0.75rem 1rem',
-                  background: '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer'
-                }}
-              >
-                Add Test Transaction
-              </button>
+                  <button
+                    onClick={addTestTransaction}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      background: '#007bff',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Add Test Transaction
+                  </button>
+                  <button
+                    onClick={addMultipleTestTransactions}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      background: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Add Multiple Test Transactions
+                  </button>
             </div>
           </div>
         </div>

@@ -285,20 +285,16 @@ const AdminWithdrawals: React.FC = () => {
         }
       })
 
-      // Log transaction in user's history
-      await addDoc(collection(db, 'transactions'), {
+      // Log transaction in user's history using TransactionService
+      const { TransactionService } = await import('../services/transactions')
+      await TransactionService.logTransaction({
         userId: withdrawal.userId,
         type: 'withdrawal',
         currency: withdrawal.crypto,
         amount: withdrawal.cryptoAmount,
-        inrAmount: withdrawal.inrAmount,
-        status: 'completed',
-        timestamp: new Date(),
-        txHash: tx.transactionHash,
-        toAddress: adminWalletAddress,
         description: `Crypto to INR withdrawal - ${withdrawal.cryptoAmount} ${withdrawal.crypto} transferred to admin wallet for bank transfer to ${withdrawal.bankDetails?.accountNumber}`,
-        bankDetails: withdrawal.bankDetails,
-        blockNumber: tx.blockNumber
+        status: 'completed',
+        txHash: tx.transactionHash
       })
 
       toast.dismiss('execute-withdrawal')

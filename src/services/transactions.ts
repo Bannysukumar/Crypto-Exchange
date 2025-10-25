@@ -21,9 +21,21 @@ export interface Transaction {
 export class TransactionService {
   static async logTransaction(transaction: Omit<Transaction, 'id' | 'timestamp'>): Promise<string> {
     try {
+      // Map transaction types to match Firebase API
+      const mapTransactionType = (type: string): 'deposit' | 'withdraw' | 'send' | 'receive' => {
+        switch (type) {
+          case 'withdrawal':
+            return 'withdraw'
+          case 'transfer':
+            return 'send' // Map transfer to send for now
+          default:
+            return type as 'deposit' | 'withdraw' | 'send' | 'receive'
+        }
+      }
+
       const firebaseTransaction: Omit<FirebaseTransaction, '_id'> = {
         userId: transaction.userId,
-        type: transaction.type as 'deposit' | 'withdraw' | 'send' | 'receive',
+        type: mapTransactionType(transaction.type),
         amount: transaction.amount,
         currency: transaction.currency,
         description: transaction.description,
@@ -56,10 +68,22 @@ export class TransactionService {
       )
       console.log('🔍 Firebase transactions received:', firebaseTransactions.length, firebaseTransactions)
 
+      // Map Firebase transaction types back to our interface
+      const mapFirebaseTransactionType = (type: string): 'deposit' | 'withdrawal' | 'send' | 'receive' | 'transfer' => {
+        switch (type) {
+          case 'withdraw':
+            return 'withdrawal'
+          case 'send':
+            return 'send' // Keep as send
+          default:
+            return type as 'deposit' | 'withdrawal' | 'send' | 'receive' | 'transfer'
+        }
+      }
+
       const mappedTransactions = firebaseTransactions.map(firebaseTx => ({
         id: firebaseTx._id?.toString(),
         userId: firebaseTx.userId,
-        type: firebaseTx.type as 'deposit' | 'withdrawal' | 'send' | 'receive' | 'transfer',
+        type: mapFirebaseTransactionType(firebaseTx.type),
         amount: firebaseTx.amount,
         currency: firebaseTx.currency,
         description: firebaseTx.description,
