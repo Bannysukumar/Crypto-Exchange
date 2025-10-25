@@ -15,6 +15,9 @@ export default async function handler(req, res) {
   
   if (req.method === 'POST') {
     console.log('Creating order with data:', req.body);
+    console.log('Environment variables check:');
+    console.log('VITE_CASHFREE_APP_ID:', process.env.VITE_CASHFREE_APP_ID ? 'SET' : 'NOT SET');
+    console.log('VITE_CASHFREE_SECRET_KEY:', process.env.VITE_CASHFREE_SECRET_KEY ? 'SET' : 'NOT SET');
     
     try {
       // Create real order with Cashfree API
