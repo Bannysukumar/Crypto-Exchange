@@ -459,45 +459,6 @@ const History: React.FC = () => {
               >
                 Export CSV
               </button>
-                  <button
-                    onClick={addTestTransaction}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      background: '#007bff',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Add Test Transaction
-                  </button>
-                  <button
-                    onClick={addMultipleTestTransactions}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      background: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Add Multiple Test Transactions
-                  </button>
-                  <button
-                    onClick={forceCreateTransaction}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      background: '#dc3545',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Force Create Transaction
-                  </button>
             </div>
           </div>
         </div>
