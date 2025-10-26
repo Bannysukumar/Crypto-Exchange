@@ -469,12 +469,24 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         
         console.log(`💰 Detected ${tokenType} withdrawal received: ${amount} to ${to}`)
         
-        // Check if this transaction was already processed
+        // Check if this transaction was already processed (global cache + database)
         const txHash = transfer.transactionHash
+        
+        // First check global cache for immediate duplicate prevention
+        if (globalProcessedTransactions.has(txHash)) {
+          console.log(`⏭️ Skipping duplicate ${tokenType} withdrawal transaction (global cache): ${txHash}`)
+          return
+        }
+        
+        // Then check database for persistent duplicate prevention
         const existingTx = await TransactionService.getTransactionByHash(currentUser.uid, txHash)
         
         if (!existingTx) {
           console.log(`📝 Logging new ${tokenType} withdrawal received: ${amount}`)
+          
+          // Add to global cache immediately to prevent race conditions
+          globalProcessedTransactions.add(txHash)
+          setProcessedTransactions(prev => new Set(prev).add(txHash))
           
           // Log the transaction
           await logTransaction('receive', amount, tokenType, `Withdrawal received: ${tokenType} from admin`, txHash)
@@ -497,7 +509,10 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
           
           console.log(`✅ Successfully processed ${tokenType} withdrawal received`)
         } else {
-          console.log(`⏭️ Skipping duplicate ${tokenType} withdrawal transaction: ${txHash}`)
+          console.log(`⏭️ Skipping duplicate ${tokenType} withdrawal transaction (database): ${txHash}`)
+          // Add to global cache even if it's a duplicate to prevent future processing
+          globalProcessedTransactions.add(txHash)
+          setProcessedTransactions(prev => new Set(prev).add(txHash))
         }
       } else {
         console.log(`❌ Transfer not from contract or not to current user`)
