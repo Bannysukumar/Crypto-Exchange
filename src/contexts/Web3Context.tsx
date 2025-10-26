@@ -488,21 +488,23 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
           globalProcessedTransactions.add(txHash)
           setProcessedTransactions(prev => new Set(prev).add(txHash))
           
-          // Log the transaction
-          await logTransaction('receive', amount, tokenType, `Withdrawal received: ${tokenType} from admin`, txHash)
+          // Check if this is an INR withdrawal (user-initiated) or admin withdrawal (admin-initiated)
+          const isInrWithdrawal = await checkIfInrWithdrawal(txHash, amount, tokenType)
           
-          // IMPORTANT: For BXC withdrawals, deduct INR balance when BXC is received
-          if (tokenType === 'BXC') {
-            console.log(`💳 BXC received - deducting INR balance`)
+          if (isInrWithdrawal) {
+            console.log(`💳 This is an INR withdrawal - deducting INR balance and crediting ${tokenType}`)
+            // For INR withdrawals: deduct INR and credit crypto
             await deductInrForBxcWithdrawal(amount, txHash)
-            
-            // IMPORTANT: Update BXC balance in dashboard when BXC is received
-            console.log(`💳 Updating BXC balance: +${amount}`)
             await updateUserCryptoBalance(tokenType, amount)
+            await logTransaction('receive', amount, tokenType, `INR withdrawal: Received ${tokenType} in exchange for INR`, txHash)
+            toast.success(`💰 INR withdrawal completed: Received ${amount} ${tokenType}`)
+          } else {
+            console.log(`🎁 This is an admin withdrawal - crediting ${tokenType} for free`)
+            // For admin withdrawals: just credit crypto (no INR deduction)
+            await updateUserCryptoBalance(tokenType, amount)
+            await logTransaction('receive', amount, tokenType, `Admin withdrawal: Received ${tokenType} from admin`, txHash)
+            toast.success(`🎉 ${tokenType} withdrawal received: ${amount} ${tokenType}`)
           }
-          
-          // Show notification
-          toast.success(`🎉 ${tokenType} withdrawal received: ${amount} ${tokenType}`)
           
           // Trigger balance update event
           window.dispatchEvent(new CustomEvent('balanceUpdated'))
@@ -519,6 +521,40 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error(`Error processing ${tokenType} withdrawal received:`, error)
+    }
+  }
+
+  // Check if a transaction is an INR withdrawal (user-initiated) or admin withdrawal
+  const checkIfInrWithdrawal = async (txHash: string, amount: number, tokenType: string): Promise<boolean> => {
+    try {
+      // Check if there's a pending withdrawal record that matches this transaction
+      const { collection, query, where, getDocs } = await import('firebase/firestore')
+      const { db } = await import('../config/firebase')
+      
+      const pendingWithdrawalsQuery = query(
+        collection(db, 'pending_withdrawals'),
+        where('userId', '==', currentUser?.uid),
+        where('crypto', '==', tokenType),
+        where('status', '==', 'executed')
+      )
+      
+      const pendingWithdrawalsSnapshot = await getDocs(pendingWithdrawalsQuery)
+      
+      for (const doc of pendingWithdrawalsSnapshot.docs) {
+        const withdrawal = doc.data()
+        if (withdrawal.txHash === txHash) {
+          console.log(`🔍 Found matching pending withdrawal: ${withdrawal.type} for ${withdrawal.cryptoAmount} ${tokenType}`)
+          return withdrawal.type === 'inr_to_crypto'
+        }
+      }
+      
+      // If no matching pending withdrawal found, assume it's an admin withdrawal
+      console.log(`🔍 No matching pending withdrawal found - assuming admin withdrawal`)
+      return false
+    } catch (error) {
+      console.error('Error checking if INR withdrawal:', error)
+      // Default to admin withdrawal if check fails
+      return false
     }
   }
 
