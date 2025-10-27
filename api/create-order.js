@@ -67,6 +67,11 @@ export default async function handler(req, res) {
       
       // Test with a simple API call first
       console.log('Testing Cashfree API connectivity...');
+      console.log('Using credentials:', {
+        appId: process.env.VITE_CASHFREE_APP_ID,
+        secretKey: process.env.VITE_CASHFREE_SECRET_KEY ? 'SET' : 'NOT SET'
+      });
+      
       const testResponse = await fetch('https://sandbox.cashfree.com/pg/orders', {
         method: 'GET',
         headers: {
@@ -81,8 +86,12 @@ export default async function handler(req, res) {
       if (!testResponse.ok) {
         const testError = await testResponse.text();
         console.log('Test API call error:', testError);
+        console.log('Test API call headers:', Object.fromEntries(testResponse.headers.entries()));
+      } else {
+        console.log('Test API call successful!');
       }
       
+      // Try the correct Cashfree API endpoint
       const cashfreeResponse = await fetch('https://sandbox.cashfree.com/pg/orders', {
         method: 'POST',
         headers: {
