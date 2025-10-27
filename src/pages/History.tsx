@@ -101,6 +101,8 @@ const History: React.FC = () => {
     }
     
     console.log('🔍 History page - Loading unified transactions for user:', currentUser.uid)
+    console.log('🔍 Current user object:', currentUser)
+    console.log('🔍 User profile:', userProfile)
     setLoading(true)
     
     try {
