@@ -775,7 +775,10 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       console.log('📝 Logging new transaction:', { type, amount, currency, description, txHash })
-      const transactionId = await TransactionService.logTransaction({
+      
+      // Use unified history service for consistent logging
+      const { UnifiedHistoryService } = await import('../services/unifiedHistory')
+      const transactionId = await UnifiedHistoryService.logTransaction({
         userId: currentUser.uid,
         type: type as 'deposit' | 'withdrawal' | 'send' | 'receive' | 'transfer',
         amount,

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useWeb3 } from '../contexts/Web3Context'
 import { useCryptoPrices } from '../contexts/CryptoPriceContext'
-import { TransactionService, Transaction } from '../services/transactions'
+import { UnifiedHistoryService, UnifiedTransaction } from '../services/unifiedHistory'
 import { collection, addDoc } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import toast from 'react-hot-toast'
@@ -21,7 +21,7 @@ const Withdraw: React.FC = () => {
     inrAmount: '',
     walletAddress: ''
   })
-  const [recentWithdrawals, setRecentWithdrawals] = useState<Transaction[]>([])
+  const [recentWithdrawals, setRecentWithdrawals] = useState<UnifiedTransaction[]>([])
   const [loading, setLoading] = useState(false)
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(true)
   const [contractBXCBalance, setContractBXCBalance] = useState<string | null>(null)
@@ -203,13 +203,15 @@ const Withdraw: React.FC = () => {
       })
 
       // 3. Log transaction as completed (crypto deducted, INR withdrawal initiated)
-      await TransactionService.logTransaction({
+      await UnifiedHistoryService.logTransaction({
         userId: currentUser!.uid,
         type: 'withdrawal',
         amount: amount,
         currency: selectedCrypto,
         description: `INR withdrawal initiated: ${amount} ${selectedCrypto} for ₹${inrAmount.toFixed(2)} - Admin will process bank transfer`,
-        status: 'completed'
+        status: 'completed',
+        category: 'fiat',
+        subType: 'withdraw'
       })
 
       toast.dismiss('inr-withdraw-toast')
@@ -304,13 +306,15 @@ const Withdraw: React.FC = () => {
         type: 'inr_to_crypto'
       })
 
-      await TransactionService.logTransaction({
+      await UnifiedHistoryService.logTransaction({
         userId: currentUser!.uid,
         type: 'withdrawal',
         amount: cryptoAmount,
         currency: selectedCrypto,
         description: `INR to ${selectedCrypto} withdrawal to external wallet ${walletAddress}`,
-        status: 'pending'
+        status: 'pending',
+        category: 'crypto',
+        subType: 'withdraw'
       })
 
       toast.dismiss('crypto-withdraw-toast')

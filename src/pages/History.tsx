@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { TransactionService, Transaction } from '../services/transactions'
-import { HistoryService, HistoryEntry } from '../services/history'
+import { UnifiedHistoryService, UnifiedTransaction } from '../services/unifiedHistory'
 import toast from 'react-hot-toast'
 
 const History: React.FC = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([])
+  const [transactions, setTransactions] = useState<UnifiedTransaction[]>([])
+  const [filteredTransactions, setFilteredTransactions] = useState<UnifiedTransaction[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const transactionsPerPage = 10
   const [loading, setLoading] = useState(true)
@@ -101,95 +100,36 @@ const History: React.FC = () => {
       return
     }
     
-    console.log('🔍 History page - Loading history for user:', currentUser.uid)
+    console.log('🔍 History page - Loading unified transactions for user:', currentUser.uid)
     setLoading(true)
     
     try {
-      console.log('🔍 Calling HistoryService.getUserHistory...')
-      const fetchedHistory = await HistoryService.getUserHistory(currentUser.uid, undefined, 100)
-      console.log('🔍 Fetched history:', fetchedHistory.length, fetchedHistory)
+      console.log('🔍 Calling UnifiedHistoryService.getUserTransactions...')
+      const fetchedTransactions = await UnifiedHistoryService.getUserTransactions(currentUser.uid, undefined, 100)
+      console.log('🔍 Fetched unified transactions:', fetchedTransactions.length, fetchedTransactions)
       
-      // If no history found, try transactions collection as fallback
-      if (fetchedHistory.length === 0) {
-        console.log('🔍 No history found, trying transactions collection...')
-        try {
-          const { TransactionService } = await import('../services/transactions')
-          const transactions = await TransactionService.getUserTransactions(currentUser.uid, undefined, 100)
-          console.log('🔍 Fetched transactions as fallback:', transactions.length, transactions)
-          
-          // If still no transactions, try with the other user ID that has data
-          if (transactions.length === 0) {
-            console.log('🔍 No transactions for current user, trying with sHpmLYixdPac1j8e0WTvWM8GSko2...')
-            const otherUserTransactions = await TransactionService.getUserTransactions('sHpmLYixdPac1j8e0WTvWM8GSko2', undefined, 100)
-            console.log('🔍 Fetched transactions for other user:', otherUserTransactions.length, otherUserTransactions)
-            
-            if (otherUserTransactions.length > 0) {
-              // Convert transactions to history format
-              const historyFromTransactions = otherUserTransactions.map(tx => ({
-                _id: tx.id,
-                userId: tx.userId,
-                type: tx.type,
-                amount: tx.amount,
-                currency: tx.currency,
-                description: tx.description,
-                status: tx.status,
-                timestamp: tx.timestamp,
-                txHash: tx.txHash,
-                orderId: tx.orderId,
-                paymentId: tx.paymentId
-              }))
-              
-              console.log('🔍 Converted other user transactions to history:', historyFromTransactions.length)
-              setTransactions(historyFromTransactions)
-              setFilteredTransactions(historyFromTransactions)
-              return
-            }
-          }
-          
-          // Convert transactions to history format
-          const historyFromTransactions = transactions.map(tx => ({
-            _id: tx.id,
-            userId: tx.userId,
-            type: tx.type,
-            amount: tx.amount,
-            currency: tx.currency,
-            description: tx.description,
-            status: tx.status,
-            timestamp: tx.timestamp,
-            txHash: tx.txHash,
-            orderId: tx.orderId,
-            paymentId: tx.paymentId
-          }))
-          
-          console.log('🔍 Converted transactions to history:', historyFromTransactions.length)
-          setTransactions(historyFromTransactions)
-          setFilteredTransactions(historyFromTransactions)
-          return
-        } catch (transactionError) {
-          console.error('❌ Error loading transactions as fallback:', transactionError)
-        }
-      }
-      
-      // Debug: Log each history entry's details
-      fetchedHistory.forEach((entry, index) => {
-        console.log(`🔍 History entry ${index}:`, {
-          id: entry._id,
-          type: entry.type,
-          amount: entry.amount,
-          currency: entry.currency,
-          description: entry.description,
-          status: entry.status,
-          timestamp: entry.timestamp
+      // Debug: Log each transaction's details
+      fetchedTransactions.forEach((tx, index) => {
+        console.log(`🔍 Transaction ${index}:`, {
+          id: tx.id,
+          type: tx.type,
+          amount: tx.amount,
+          currency: tx.currency,
+          description: tx.description,
+          status: tx.status,
+          timestamp: tx.timestamp,
+          category: tx.category,
+          subType: tx.subType
         })
       })
       
-      setTransactions(fetchedHistory)
-      setFilteredTransactions(fetchedHistory)
+      setTransactions(fetchedTransactions)
+      setFilteredTransactions(fetchedTransactions)
       
-      console.log('🔍 History entries set in state:', fetchedHistory.length)
+      console.log('🔍 Transactions set in state:', fetchedTransactions.length)
     } catch (error) {
-      console.error('❌ Error loading history:', error)
-      toast.error('Error loading history')
+      console.error('❌ Error loading unified transactions:', error)
+      toast.error('Error loading transaction history')
       setTransactions([])
       setFilteredTransactions([])
     } finally {
@@ -271,7 +211,7 @@ const History: React.FC = () => {
     
     const deposits = transactions.filter(t => t.type === 'deposit')
     const withdrawals = transactions.filter(t => t.type === 'withdrawal')
-    const transfers = transactions.filter(t => t.type === 'transfer')
+    const transfers = transactions.filter(t => ['send', 'receive', 'transfer'].includes(t.type))
     
     console.log('🔍 Transaction type breakdown:', {
       deposits: deposits.length,
@@ -384,7 +324,7 @@ const History: React.FC = () => {
     )
   }
 
-  const renderTransactionRow = (transaction: Transaction) => (
+  const renderTransactionRow = (transaction: UnifiedTransaction) => (
     <div key={transaction.id} style={{
       padding: '1rem',
       border: '1px solid #eee',
@@ -513,6 +453,8 @@ const History: React.FC = () => {
                 <option value="">All Types</option>
                 <option value="deposit">Deposits</option>
                 <option value="withdrawal">Withdrawals</option>
+                <option value="send">Send</option>
+                <option value="receive">Receive</option>
                 <option value="transfer">Transfers</option>
               </select>
             </div>

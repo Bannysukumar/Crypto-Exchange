@@ -628,8 +628,9 @@ export class CashfreeManager {
 
   private async handlePaymentSuccess(orderId: string, paymentId: string, amount: number, currency: string, userId: string, status: string, description: string): Promise<void> {
     try {
-      // Log transaction
-      await firebaseService.createTransaction({
+      // Log transaction using unified history service
+      const { UnifiedHistoryService } = await import('./unifiedHistory')
+      await UnifiedHistoryService.logTransaction({
         userId,
         type: 'deposit',
         amount,
@@ -638,7 +639,8 @@ export class CashfreeManager {
         status: status as 'completed',
         orderId,
         paymentId,
-        timestamp: new Date()
+        category: 'fiat',
+        subType: 'deposit'
       })
 
       // Update user's INR balance

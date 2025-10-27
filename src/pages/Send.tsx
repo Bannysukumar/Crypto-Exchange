@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useCryptoPrices } from '../contexts/CryptoPriceContext'
-import { TransactionService, Transaction } from '../services/transactions'
+import { UnifiedHistoryService, UnifiedTransaction } from '../services/unifiedHistory'
 import { apiService } from '../services/api'
 import toast from 'react-hot-toast'
 
@@ -19,7 +19,7 @@ const Send: React.FC = () => {
     recipientEmail: '',
     description: ''
   })
-  const [recentTransfers, setRecentTransfers] = useState<Transaction[]>([])
+  const [recentTransfers, setRecentTransfers] = useState<UnifiedTransaction[]>([])
   const [loading, setLoading] = useState(false)
   const [transfersLoading, setTransfersLoading] = useState(true)
 
@@ -34,16 +34,11 @@ const Send: React.FC = () => {
       setTransfersLoading(true)
       console.log('🔍 Loading recent transfers for user:', currentUser.uid)
       
-      // Get both send and receive transactions for transfers
-      const sends = await TransactionService.getUserTransactions(currentUser.uid, 'send', 10)
-      const receives = await TransactionService.getUserTransactions(currentUser.uid, 'receive', 10)
+      // Get recent transfers using unified history service
+      const transfers = await UnifiedHistoryService.getRecentTransactions(currentUser.uid, 10)
       
-      // Combine and sort by timestamp
-      const allTransfers = [...sends, ...receives]
-      allTransfers.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      
-      console.log('🔍 Found transfers:', allTransfers.length, allTransfers)
-      setRecentTransfers(allTransfers.slice(0, 10))
+      console.log('🔍 Found transfers:', transfers.length, transfers)
+      setRecentTransfers(transfers)
     } catch (error) {
       console.error('Error loading recent transfers:', error)
       toast.error('Error loading recent transfers')
@@ -132,23 +127,27 @@ const Send: React.FC = () => {
 
       // Log transactions for both users
       console.log('🔧 Logging sender transaction...')
-      await TransactionService.logTransaction({
+      await UnifiedHistoryService.logTransaction({
         userId: currentUser!.uid,
-        type: 'transfer',
+        type: 'send',
         amount: -amount, // Negative for sender
         currency: 'INR',
         description: `Sent ₹${amount} to ${recipientEmail}${description ? ': ' + description : ''}`,
-        status: 'completed'
+        status: 'completed',
+        category: 'fiat',
+        subType: 'send'
       })
 
       console.log('🔧 Logging recipient transaction...')
-      await TransactionService.logTransaction({
+      await UnifiedHistoryService.logTransaction({
         userId: recipient.uid,
-        type: 'transfer',
+        type: 'receive',
         amount: amount, // Positive for recipient
         currency: 'INR',
         description: `Received ₹${amount} from ${currentUser!.email}${description ? ': ' + description : ''}`,
-        status: 'completed'
+        status: 'completed',
+        category: 'fiat',
+        subType: 'receive'
       })
 
       console.log('🔧 Transactions logged successfully')
@@ -225,22 +224,26 @@ const Send: React.FC = () => {
       }
 
       // Log transactions for both users
-      await TransactionService.logTransaction({
+      await UnifiedHistoryService.logTransaction({
         userId: currentUser!.uid,
-        type: 'transfer',
+        type: 'send',
         amount: -amount, // Negative for sender
         currency: selectedCrypto,
         description: `Sent ${amount} ${selectedCrypto} to ${recipientEmail}${description ? ': ' + description : ''}`,
-        status: 'completed'
+        status: 'completed',
+        category: 'crypto',
+        subType: 'send'
       })
 
-      await TransactionService.logTransaction({
+      await UnifiedHistoryService.logTransaction({
         userId: recipient.uid,
-        type: 'transfer',
+        type: 'receive',
         amount: amount, // Positive for recipient
         currency: selectedCrypto,
         description: `Received ${amount} ${selectedCrypto} from ${currentUser!.email}${description ? ': ' + description : ''}`,
-        status: 'completed'
+        status: 'completed',
+        category: 'crypto',
+        subType: 'receive'
       })
 
       toast.dismiss('crypto-send-toast')
