@@ -387,25 +387,19 @@ export class CashfreeManager {
       // Check if we're using real Cashfree or demo mode
       let result: any
 
-      // Check if this is a mock order (starts with 'session_' and has timestamp)
-      const isMockOrder = orderDetails.payment_session_id && orderDetails.payment_session_id.startsWith('session_') && orderDetails.payment_session_id.includes('_')
+      if (CASHFREE_CONFIG.isDemo()) {
+      console.log('Using demo payment system...')
+      
+      const checkoutOptions = {
+        orderId: orderDetails.order_id,
+        paymentSessionId: orderDetails.payment_session_id,
+        redirectTarget: '_self'
+      }
 
-      if (CASHFREE_CONFIG.isDemo() || isMockOrder) {
-        console.log('Using demo/mock payment system...')
-        
-        // Simulate a successful payment for demo/mock orders
-        console.log('Simulating successful payment for demo/mock order...')
-        
-        // Simulate payment success after a short delay
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        result = {
-          success: true,
-          paymentId: 'demo_payment_' + Date.now(),
-          status: 'SUCCESS'
-        }
-        
-        console.log('Demo/mock payment simulation completed:', result)
+      console.log('Initiating demo checkout with options:', checkoutOptions)
+
+      // Use the mock checkout
+        result = await this.cashfree.checkout(checkoutOptions)
       } else {
         console.log('Using real Cashfree SDK...')
         

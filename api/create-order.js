@@ -79,35 +79,10 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('Error creating order:', error);
       
-      // For testing purposes, create a mock order that will work with Cashfree SDK
-      console.log('Creating mock order for testing...');
-      
-      const mockOrder = {
-        order_id: 'order_' + Date.now(),
-        payment_session_id: 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
-        order_amount: req.body.amount || 100,
-        order_currency: 'INR',
-        order_status: 'created',
-        created_at: new Date().toISOString(),
-        customer_details: {
-          customer_id: req.body.customerId || 'customer_' + Date.now(),
-          customer_name: req.body.customerName || 'Test User',
-          customer_email: req.body.customerEmail || 'test@example.com',
-          customer_phone: req.body.customerPhone || '+1234567890'
-        },
-        order_note: 'Crypto Exchange Deposit (Mock)',
-        order_tags: {
-          'category': 'crypto',
-          'type': 'deposit'
-        }
-      };
-      
-      console.log('Mock order created:', mockOrder);
-      
-      res.status(200).json({
-        success: true,
-        message: 'Order created successfully (mock for testing)',
-        order: mockOrder
+      res.status(500).json({
+        success: false,
+        message: 'Failed to create order with Cashfree',
+        error: error.message
       });
     }
   } else {
