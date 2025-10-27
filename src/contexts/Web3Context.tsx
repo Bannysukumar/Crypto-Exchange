@@ -530,25 +530,27 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       const { collection, query, where, getDocs } = await import('firebase/firestore')
       const { db } = await import('../config/firebase')
       
+      // Look for both pending and executed withdrawals
       const pendingWithdrawalsQuery = query(
         collection(db, 'pending_withdrawals'),
         where('userId', '==', currentUser?.uid),
         where('crypto', '==', tokenType),
-        where('status', '==', 'executed')
+        where('cryptoAmount', '==', amount)
       )
       
       const pendingWithdrawalsSnapshot = await getDocs(pendingWithdrawalsQuery)
       
       for (const doc of pendingWithdrawalsSnapshot.docs) {
         const withdrawal = doc.data()
-        if (withdrawal.txHash === txHash) {
-          console.log(`🔍 Found matching pending withdrawal: ${withdrawal.type} for ${withdrawal.cryptoAmount} ${tokenType}`)
-          return withdrawal.type === 'inr_to_crypto'
+        // Check if this is a crypto_to_inr withdrawal (INR withdrawal)
+        if (withdrawal.type === 'crypto_to_inr') {
+          console.log(`🔍 Found matching INR withdrawal: ${withdrawal.type} for ${withdrawal.cryptoAmount} ${tokenType}`)
+          return true
         }
       }
       
-      // If no matching pending withdrawal found, assume it's an admin withdrawal
-      console.log(`🔍 No matching pending withdrawal found - assuming admin withdrawal`)
+      // If no matching INR withdrawal found, assume it's an admin withdrawal
+      console.log(`🔍 No matching INR withdrawal found - assuming admin withdrawal`)
       return false
     } catch (error) {
       console.error('Error checking if INR withdrawal:', error)
