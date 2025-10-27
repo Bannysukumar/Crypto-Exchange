@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-version': '2023-08-01',
+          'x-api-version': '2022-09-01',
           'x-client-id': process.env.VITE_CASHFREE_APP_ID,
           'x-client-secret': process.env.VITE_CASHFREE_SECRET_KEY
         }

@@ -65,11 +65,29 @@ export default async function handler(req, res) {
         'x-client-secret': process.env.VITE_CASHFREE_SECRET_KEY ? 'SET' : 'NOT SET'
       });
       
+      // Test with a simple API call first
+      console.log('Testing Cashfree API connectivity...');
+      const testResponse = await fetch('https://sandbox.cashfree.com/pg/orders', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-version': '2022-09-01',
+          'x-client-id': process.env.VITE_CASHFREE_APP_ID,
+          'x-client-secret': process.env.VITE_CASHFREE_SECRET_KEY
+        }
+      });
+      
+      console.log('Test API call status:', testResponse.status);
+      if (!testResponse.ok) {
+        const testError = await testResponse.text();
+        console.log('Test API call error:', testError);
+      }
+      
       const cashfreeResponse = await fetch('https://sandbox.cashfree.com/pg/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-version': '2023-08-01',
+          'x-api-version': '2022-09-01',
           'x-client-id': process.env.VITE_CASHFREE_APP_ID,
           'x-client-secret': process.env.VITE_CASHFREE_SECRET_KEY
         },
