@@ -161,7 +161,7 @@ const Withdraw: React.FC = () => {
 
     try {
       setLoading(true)
-      toast.loading('Processing crypto-to-INR withdrawal request...', { id: 'inr-withdraw-toast' })
+      toast.loading('Processing crypto-to-INR withdrawal...', { id: 'inr-withdraw-toast' })
 
       // Calculate INR equivalent using current crypto prices
       const inrAmount = amount * (prices[selectedCrypto as keyof typeof prices] || 0)
@@ -173,11 +173,19 @@ const Withdraw: React.FC = () => {
         return
       }
 
-      // IMPORTANT: Do NOT deduct crypto balance here
-      // Crypto will only be deducted when admin processes the withdrawal
-      console.log('🔄 Crypto-to-INR withdrawal requested - crypto will be deducted only when admin processes the withdrawal')
+      // 1. IMMEDIATELY deduct crypto balance (no blockchain needed)
+      console.log(`🔄 Deducting ${amount} ${selectedCrypto} for INR withdrawal`)
+      
+      // Update user profile with deducted crypto balance
+      const updatedBalances = { ...userProfile.cryptoBalances }
+      updatedBalances[selectedCrypto as keyof typeof updatedBalances] -= amount
+      
+      await updateUserProfile({
+        ...userProfile,
+        cryptoBalances: updatedBalances
+      })
 
-      // Create pending withdrawal request in Firestore
+      // 2. Create pending withdrawal for admin to process bank transfer
       await addDoc(collection(db, 'pending_withdrawals'), {
         userId: currentUser!.uid,
         userAddress: '', // Not applicable for bank withdrawals
@@ -194,18 +202,18 @@ const Withdraw: React.FC = () => {
         }
       })
 
-      // Log transaction as pending
+      // 3. Log transaction as completed (crypto deducted, INR withdrawal initiated)
       await TransactionService.logTransaction({
         userId: currentUser!.uid,
         type: 'withdrawal',
         amount: amount,
         currency: selectedCrypto,
-        description: `Converted ${amount} ${selectedCrypto} to ₹${inrAmount.toFixed(2)} and requested withdrawal to bank account ${inrWithdraw.bankAccount}`,
-        status: 'pending'
+        description: `INR withdrawal initiated: ${amount} ${selectedCrypto} for ₹${inrAmount.toFixed(2)} - Admin will process bank transfer`,
+        status: 'completed'
       })
 
       toast.dismiss('inr-withdraw-toast')
-      toast.success(`Crypto-to-INR withdrawal request submitted. Admin will process the withdrawal shortly.`)
+      toast.success(`INR withdrawal initiated! ${amount} ${selectedCrypto} deducted. Admin will process bank transfer.`)
 
       setInrWithdraw({
         crypto: 'BTC',
@@ -454,7 +462,7 @@ const Withdraw: React.FC = () => {
               <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>💰 Withdraw INR</h2>
             </div>
             <div className="card">
-              <p style={{ color: '#666', marginBottom: '1rem' }}>Convert crypto to INR and withdraw to your bank account</p>
+              <p style={{ color: '#666', marginBottom: '1rem' }}>Convert crypto to INR and withdraw to your bank account. Crypto will be deducted immediately.</p>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                   Select Cryptocurrency

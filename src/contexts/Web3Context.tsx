@@ -492,15 +492,14 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
           const isInrWithdrawal = await checkIfInrWithdrawal(txHash, amount, tokenType)
           
           if (isInrWithdrawal) {
-            console.log(`💳 This is an INR withdrawal - deducting INR balance and crediting ${tokenType}`)
-            // For INR withdrawals: deduct INR and credit crypto
-            await deductInrForBxcWithdrawal(amount, txHash)
-            await updateUserCryptoBalance(tokenType, amount)
-            await logTransaction('receive', amount, tokenType, `INR withdrawal: Received ${tokenType} in exchange for INR`, txHash)
-            toast.success(`💰 INR withdrawal completed: Received ${amount} ${tokenType}`)
+            console.log(`💳 This is an INR withdrawal - NO crypto crediting, only logging`)
+            // For INR withdrawals, we don't credit crypto because it was already deducted
+            // We just log the transaction for record keeping
+            await logTransaction('receive', amount, tokenType, `INR withdrawal: Admin processed bank transfer`, txHash)
+            toast.success(`💰 INR withdrawal processed: Bank transfer completed`)
           } else {
-            console.log(`🎁 This is an admin withdrawal - crediting ${tokenType} for free`)
-            // For admin withdrawals: just credit crypto (no INR deduction)
+            console.log(`🎁 This is an admin withdrawal - crediting ${tokenType}`)
+            // Only credit crypto for admin withdrawals (free BXC)
             await updateUserCryptoBalance(tokenType, amount)
             await logTransaction('receive', amount, tokenType, `Admin withdrawal: Received ${tokenType} from admin`, txHash)
             toast.success(`🎉 ${tokenType} withdrawal received: ${amount} ${tokenType}`)
