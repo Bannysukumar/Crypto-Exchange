@@ -68,9 +68,12 @@ export default async function handler(req, res) {
       const transactions = [];
       
       querySnapshot.forEach((doc) => {
+        const docData = doc.data();
         transactions.push({
           _id: doc.id,
-          ...doc.data()
+          ...docData,
+          // Ensure timestamp is properly formatted
+          timestamp: docData.timestamp?.toDate ? docData.timestamp.toDate() : docData.timestamp
         });
       });
       

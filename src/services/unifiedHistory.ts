@@ -237,8 +237,12 @@ export class UnifiedHistoryService {
     limitCount: number = 100
   ): Promise<UnifiedTransaction[]> {
     try {
+      console.log('🔍 getFromHistory called with:', { userId, transactionType, limitCount })
       const historyEntries = await apiService.getUserHistory(userId, transactionType, limitCount)
-      return historyEntries.map(entry => this.mapHistoryEntryToUnified(entry))
+      console.log('🔍 Raw history entries from API:', historyEntries.length, historyEntries)
+      const mappedEntries = historyEntries.map(entry => this.mapHistoryEntryToUnified(entry))
+      console.log('🔍 Mapped history entries:', mappedEntries.length, mappedEntries)
+      return mappedEntries
     } catch (error) {
       console.error('❌ Error fetching from history:', error)
       return []
@@ -251,8 +255,12 @@ export class UnifiedHistoryService {
     limitCount: number = 100
   ): Promise<UnifiedTransaction[]> {
     try {
+      console.log('🔍 getFromTransactions called with:', { userId, transactionType, limitCount })
       const transactions = await firebaseService.getUserTransactions(userId, transactionType, limitCount)
-      return transactions.map(tx => this.mapTransactionToUnified(tx))
+      console.log('🔍 Raw transactions from API:', transactions.length, transactions)
+      const mappedTransactions = transactions.map(tx => this.mapTransactionToUnified(tx))
+      console.log('🔍 Mapped transactions:', mappedTransactions.length, mappedTransactions)
+      return mappedTransactions
     } catch (error) {
       console.error('❌ Error fetching from transactions:', error)
       return []
