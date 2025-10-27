@@ -25,18 +25,31 @@ export default async function handler(req, res) {
 
   try {
     console.log('🔍 Testing transactions in database...')
+    console.log('🔍 Firebase config:', {
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+      hasApiKey: !!process.env.VITE_FIREBASE_API_KEY,
+      hasAuthDomain: !!process.env.VITE_FIREBASE_AUTH_DOMAIN
+    })
     
     // Get all documents from both collections
-    const [historySnapshot, transactionsSnapshot] = await Promise.all([
-      getDocs(collection(db, 'history')),
-      getDocs(collection(db, 'transactions'))
-    ])
+    console.log('🔍 Querying history collection...')
+    const historySnapshot = await getDocs(collection(db, 'history'))
+    console.log('🔍 History snapshot size:', historySnapshot.size)
+    console.log('🔍 History snapshot empty:', historySnapshot.empty)
+    
+    console.log('🔍 Querying transactions collection...')
+    const transactionsSnapshot = await getDocs(collection(db, 'transactions'))
+    console.log('🔍 Transactions snapshot size:', transactionsSnapshot.size)
+    console.log('🔍 Transactions snapshot empty:', transactionsSnapshot.empty)
     
     const allHistory = []
     const allTransactions = []
     
-    historySnapshot.forEach((doc) => {
+    console.log('🔍 Processing history documents...')
+    historySnapshot.forEach((doc, index) => {
+      console.log(`🔍 History doc ${index}:`, doc.id, doc.exists())
       const data = doc.data()
+      console.log(`🔍 History doc ${index} data:`, data)
       allHistory.push({
         id: doc.id,
         userId: data.userId,
@@ -48,8 +61,11 @@ export default async function handler(req, res) {
       })
     })
     
-    transactionsSnapshot.forEach((doc) => {
+    console.log('🔍 Processing transaction documents...')
+    transactionsSnapshot.forEach((doc, index) => {
+      console.log(`🔍 Transaction doc ${index}:`, doc.id, doc.exists())
       const data = doc.data()
+      console.log(`🔍 Transaction doc ${index} data:`, data)
       allTransactions.push({
         id: doc.id,
         userId: data.userId,
@@ -63,6 +79,8 @@ export default async function handler(req, res) {
     
     console.log('🔍 Total history entries:', allHistory.length)
     console.log('🔍 Total transaction entries:', allTransactions.length)
+    console.log('🔍 Sample history entries:', allHistory.slice(0, 3))
+    console.log('🔍 Sample transaction entries:', allTransactions.slice(0, 3))
     
     // Group by user ID
     const historyByUser = {}
