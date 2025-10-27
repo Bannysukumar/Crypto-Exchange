@@ -44,28 +44,39 @@ async function testCashfreeAPI() {
     tests: []
   };
   
-  // Test 1: Simple GET request
+  // Test 1: Try correct endpoint - /pg/orders (POST only)
   try {
-    console.log('Test 1: Simple GET request to Cashfree API');
+    console.log('Test 1: POST request to /pg/orders (correct method)');
     const test1 = await fetch('https://sandbox.cashfree.com/pg/orders', {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-version': '2022-09-01',
         'x-client-id': process.env.VITE_CASHFREE_APP_ID,
         'x-client-secret': process.env.VITE_CASHFREE_SECRET_KEY
-      }
+      },
+      body: JSON.stringify({
+        order_id: 'test_' + Date.now(),
+        order_amount: 100,
+        order_currency: 'INR',
+        customer_details: {
+          customer_id: 'test_customer',
+          customer_name: 'Test Customer',
+          customer_email: 'test@example.com',
+          customer_phone: '9999999999'
+        }
+      })
     });
     
     results.tests.push({
-      name: 'GET /pg/orders',
+      name: 'POST /pg/orders (test order)',
       status: test1.status,
       success: test1.ok,
       error: test1.ok ? null : await test1.text()
     });
   } catch (error) {
     results.tests.push({
-      name: 'GET /pg/orders',
+      name: 'POST /pg/orders (test order)',
       status: 'ERROR',
       success: false,
       error: error.message
@@ -100,10 +111,10 @@ async function testCashfreeAPI() {
     });
   }
   
-  // Test 3: Try different endpoint
+  // Test 3: Try order status endpoint
   try {
-    console.log('Test 3: GET request to different endpoint');
-    const test3 = await fetch('https://sandbox.cashfree.com/pg/orders?limit=1', {
+    console.log('Test 3: GET request to order status endpoint');
+    const test3 = await fetch('https://sandbox.cashfree.com/pg/orders/test_order_123', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -114,14 +125,14 @@ async function testCashfreeAPI() {
     });
     
     results.tests.push({
-      name: 'GET /pg/orders?limit=1',
+      name: 'GET /pg/orders/{order_id} (order status)',
       status: test3.status,
       success: test3.ok,
       error: test3.ok ? null : await test3.text()
     });
   } catch (error) {
     results.tests.push({
-      name: 'GET /pg/orders?limit=1',
+      name: 'GET /pg/orders/{order_id} (order status)',
       status: 'ERROR',
       success: false,
       error: error.message
