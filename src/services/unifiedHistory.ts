@@ -201,7 +201,8 @@ export class UnifiedHistoryService {
         txHash: transaction.txHash,
         timestamp: new Date()
       })
-      return result._id?.toString() || ''
+      // The API returns transactionId, not _id
+      return result.transactionId || result._id?.toString() || ''
     } catch (error) {
       console.error('❌ Error logging to transactions:', error)
       throw error
@@ -221,7 +222,8 @@ export class UnifiedHistoryService {
         paymentId: transaction.paymentId,
         txHash: transaction.txHash
       })
-      return result._id?.toString() || ''
+      // The API returns historyId, not _id
+      return result.historyId || result._id?.toString() || ''
     } catch (error) {
       console.error('❌ Error logging to history:', error)
       // Don't throw error for history logging to prevent transaction failure
