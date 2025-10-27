@@ -19,6 +19,14 @@ export default async function handler(req, res) {
     console.log('VITE_CASHFREE_APP_ID:', process.env.VITE_CASHFREE_APP_ID ? 'SET' : 'NOT SET');
     console.log('VITE_CASHFREE_SECRET_KEY:', process.env.VITE_CASHFREE_SECRET_KEY ? 'SET' : 'NOT SET');
     
+    // Debug: Show actual values (first few characters only for security)
+    if (process.env.VITE_CASHFREE_APP_ID) {
+      console.log('APP_ID starts with:', process.env.VITE_CASHFREE_APP_ID.substring(0, 10) + '...');
+    }
+    if (process.env.VITE_CASHFREE_SECRET_KEY) {
+      console.log('SECRET_KEY starts with:', process.env.VITE_CASHFREE_SECRET_KEY.substring(0, 10) + '...');
+    }
+    
     // Check if environment variables are set
     if (!process.env.VITE_CASHFREE_APP_ID || !process.env.VITE_CASHFREE_SECRET_KEY) {
       console.error('Missing Cashfree credentials');
@@ -49,6 +57,13 @@ export default async function handler(req, res) {
       };
       
       console.log('Sending order data to Cashfree:', JSON.stringify(orderData, null, 2));
+      console.log('Cashfree API URL: https://sandbox.cashfree.com/pg/orders');
+      console.log('Request headers:', {
+        'Content-Type': 'application/json',
+        'x-api-version': '2023-08-01',
+        'x-client-id': process.env.VITE_CASHFREE_APP_ID,
+        'x-client-secret': process.env.VITE_CASHFREE_SECRET_KEY ? 'SET' : 'NOT SET'
+      });
       
       const cashfreeResponse = await fetch('https://sandbox.cashfree.com/pg/orders', {
         method: 'POST',
@@ -63,7 +78,12 @@ export default async function handler(req, res) {
       
       if (!cashfreeResponse.ok) {
         const errorText = await cashfreeResponse.text();
-        console.error('Cashfree API error:', errorText);
+        console.error('Cashfree API error:', {
+          status: cashfreeResponse.status,
+          statusText: cashfreeResponse.statusText,
+          error: errorText,
+          headers: Object.fromEntries(cashfreeResponse.headers.entries())
+        });
         throw new Error(`Cashfree API error: ${cashfreeResponse.status} - ${errorText}`);
       }
       
