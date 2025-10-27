@@ -37,12 +37,14 @@ export class UnifiedHistoryService {
       console.log('🔧 Normalized transaction:', normalizedTransaction)
       
       // Log to both collections simultaneously
+      console.log('🔧 About to log to both collections...')
       const [transactionId, historyId] = await Promise.all([
         this.logToTransactions(normalizedTransaction),
         this.logToHistory(normalizedTransaction)
       ])
       
       console.log('✅ Transaction logged to both collections:', { transactionId, historyId })
+      console.log('🔧 Transaction ID type:', typeof transactionId, 'History ID type:', typeof historyId)
       return transactionId
     } catch (error) {
       console.error('❌ Error logging unified transaction:', error)

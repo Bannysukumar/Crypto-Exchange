@@ -83,6 +83,11 @@ export default async function handler(req, res) {
       console.log('🔧 Creating transaction in Firestore');
       const transactionData = req.body;
       console.log('🔧 Transaction data received:', transactionData);
+      console.log('🔧 Firebase config check:', {
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+        hasApiKey: !!process.env.VITE_FIREBASE_API_KEY,
+        hasAuthDomain: !!process.env.VITE_FIREBASE_AUTH_DOMAIN
+      });
       
       try {
         // Add transaction to Firestore
@@ -111,10 +116,16 @@ export default async function handler(req, res) {
         });
       } catch (firebaseError) {
         console.error('❌ Error creating transaction in Firestore:', firebaseError);
+        console.error('❌ Firebase error details:', {
+          code: firebaseError.code,
+          message: firebaseError.message,
+          stack: firebaseError.stack
+        });
         res.status(500).json({ 
           success: false, 
           error: 'Failed to create transaction',
-          details: firebaseError.message
+          details: firebaseError.message,
+          code: firebaseError.code
         });
       }
     } else {
