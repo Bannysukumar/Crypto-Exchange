@@ -1,41 +1,105 @@
-<!-- readme-seo: bannysukumar -->
+# CryptoPay - INR ↔ Crypto Platform
 
-# Crypto Exchange
+CryptoPay - INR ↔ Crypto Platform is a Vite frontend titled "CryptoPay - INR ↔ Crypto Platform". Pages in the source include Admin Withdrawals, Dashboard, Deposit, History, Landing, Profile, Send, Withdraw.
 
-**Crypto Exchange** is an open-source decentralized token swap and exchange app. The code is written mainly in TypeScript and maintained by [Banny Sukumar](https://github.com/Bannysukumar), a blockchain and full-stack developer.
+[![License](https://img.shields.io/github/license/Bannysukumar/Crypto-Exchange)](https://github.com/Bannysukumar/Crypto-Exchange/blob/main/LICENSE) [![Stars](https://img.shields.io/github/stars/Bannysukumar/Crypto-Exchange)](https://github.com/Bannysukumar/Crypto-Exchange/stargazers) [![Last commit](https://img.shields.io/github/last-commit/Bannysukumar/Crypto-Exchange)](https://github.com/Bannysukumar/Crypto-Exchange/commits/main)
 
-This repository is public so developers can read the source, reuse it under the MIT License, and send improvements.
+## Overview
 
-## About this project
+CryptoPay - INR ↔ Crypto Platform is a Vite frontend titled "CryptoPay - INR ↔ Crypto Platform". Pages in the source include Admin Withdrawals, Dashboard, Deposit, History, Landing, Profile, Send, Withdraw.
 
-Crypto Exchange lives at [`github.com/Bannysukumar/Crypto-Exchange`](https://github.com/Bannysukumar/Crypto-Exchange). Use it as a starting point for a decentralized token swap and exchange app, or study how the TypeScript parts fit together.
 
-## Tech stack
+What is actually in the repository: `api/`, `public/`, `src/`. GitHub reports the primary language as TypeScript.
 
-- Primary language: **TypeScript**
-- License: **MIT**
-- Maintainer: [Banny Sukumar](https://github.com/Bannysukumar)
+Published site recorded on the repository: https://crypto-exchange-ecru-chi.vercel.app
 
-## Getting started
+## Features
+
+
+- Admin Withdrawals
+- Dashboard
+- Deposit
+- History
+- Landing
+- Profile
+- Send
+- Withdraw
+
+## Tech Stack
+
+| Technology | Where it shows up |
+|---|---|
+| React | User interface |
+| Vite | Frontend build tool |
+| Firebase | Backend services used by this repository |
+| ethers.js or web3.js | Wallet and contract calls from the browser or app |
+| API routes | Server endpoints in the api directory |
+
+## Project Architecture
+
+React client in src/ and HTTP handlers in api/.
+
+## Project Structure
+
+```text
+Crypto-Exchange/
+├── api/
+├── public/
+├── src/
+├── env.example
+├── index.html
+├── package-lock.json
+├── package.json
+├── tsconfig.json
+├── tsconfig.node.json
+├── vercel.json
+├── vite.config.ts
+```
+
+## Getting Started
 
 ```bash
 git clone https://github.com/Bannysukumar/Crypto-Exchange.git
 cd Crypto-Exchange
+npm install
+npm run dev
 ```
 
-Open the project in your editor. Install dependencies only if this repo already includes a manifest such as `package.json`, `requirements.txt`, or a `.csproj` file.
+Scripts defined in package.json:
+
+- `npm run dev` — `vite`
+- `npm run build` — `vite build`
+- `npm run lint` — `eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0`
+
+## API
+
+Endpoint files present in `api/`:
+
+- `api/create-order.js`
+- `api/health.js`
+- `api/history.js`
+- `api/order-status.js`
+- `api/test.js`
+- `api/transactions.js`
+- `api/users.js`
+
+## Deployment
+
+- vercel.json is in the repository root.
+- The repository homepage is https://crypto-exchange-ecru-chi.vercel.app.
 
 ## Contributing
 
-Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before you open a pull request.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Banny Sukumar.
+Licensed under MIT. See [LICENSE](LICENSE).
 
 ## Author
+
+[Banny Sukumar](https://github.com/Bannysukumar)
 
 - GitHub: [@Bannysukumar](https://github.com/Bannysukumar)
 - Portfolio: [adepu-sukumar.vercel.app](https://adepu-sukumar.vercel.app/)
 - LinkedIn: [Adepu Sukumar](https://www.linkedin.com/in/adepu-sukumar-59b423351)
-- ORCID: [0009-0007-9766-6579](https://orcid.org/0009-0007-9766-6579)
