@@ -1,62 +1,59 @@
-# CryptoPay - INR ↔ Crypto Platform
+<!-- readme-seo: bannysukumar-professional-v4 -->
 
-CryptoPay - INR ↔ Crypto Platform is a Vite frontend titled "CryptoPay - INR ↔ Crypto Platform". Pages in the source include Admin Withdrawals, Dashboard, Deposit, History, Landing, Profile, Send, Withdraw.
+# CryptoPay
 
-[![License](https://img.shields.io/github/license/Bannysukumar/Crypto-Exchange)](https://github.com/Bannysukumar/Crypto-Exchange/blob/main/LICENSE) [![Stars](https://img.shields.io/github/stars/Bannysukumar/Crypto-Exchange)](https://github.com/Bannysukumar/Crypto-Exchange/stargazers) [![Last commit](https://img.shields.io/github/last-commit/Bannysukumar/Crypto-Exchange)](https://github.com/Bannysukumar/Crypto-Exchange/commits/main)
+CryptoPay is a React and Vite web application for INR and crypto payments. The HTML title is "CryptoPay - INR ↔ Crypto Platform". Pages in `src/pages` cover landing, dashboard, deposit, withdraw, send, history, profile, and admin withdrawals.
 
 ## Overview
 
-CryptoPay - INR ↔ Crypto Platform is a Vite frontend titled "CryptoPay - INR ↔ Crypto Platform". Pages in the source include Admin Withdrawals, Dashboard, Deposit, History, Landing, Profile, Send, Withdraw.
+The repository name is `Crypto-Exchange`. The product name in the source is CryptoPay. The client uses React, Vite, Firebase, and the `web3` package. `src/config/contracts.ts` holds contract configuration. `src/config/cashfree.ts` and `env.example` refer to Cashfree. Server handlers live in `api/`.
 
-
-What is actually in the repository: `api/`, `public/`, `src/`. GitHub reports the primary language as TypeScript.
-
-Published site recorded on the repository: https://crypto-exchange-ecru-chi.vercel.app
+This is a different repository from `crypto-pay`. The recorded homepage is https://crypto-exchange-ecru-chi.vercel.app.
 
 ## Features
 
-
-- Admin Withdrawals
-- Dashboard
-- Deposit
-- History
-- Landing
-- Profile
-- Send
-- Withdraw
+- Landing, dashboard, deposit, withdraw, send, history, and profile pages
+- Admin withdrawals page
+- Auth, Web3, and crypto-price React contexts
+- Cashfree config and an `env.example` file
+- API files for orders, order status, transactions, users, history, and health
 
 ## Tech Stack
 
 | Technology | Where it shows up |
 |---|---|
-| React | User interface |
-| Vite | Frontend build tool |
-| Firebase | Backend services used by this repository |
-| ethers.js or web3.js | Wallet and contract calls from the browser or app |
-| API routes | Server endpoints in the api directory |
+| React | `package.json` and `src/` |
+| TypeScript | `tsconfig.json` |
+| Vite | `vite.config.ts` |
+| Firebase | `src/config/firebase.ts` |
+| web3 | `web3` dependency and `src/contexts/Web3Context.tsx` |
+| Cashfree | `src/config/cashfree.ts` and `env.example` |
 
-## Project Architecture
+## Architecture
 
-React client in src/ and HTTP handlers in api/.
+React client in `src/` → HTTP handlers in `api/` → Firebase and Web3 providers in the client. Contract settings are read from `src/config/contracts.ts`. No deployed contract address is documented in this README because none was taken from a verified public source during this update.
 
 ## Project Structure
 
 ```text
 Crypto-Exchange/
 ├── api/
-├── public/
-├── src/
+├── src/pages/
+├── src/config/
+├── src/contexts/
 ├── env.example
 ├── index.html
-├── package-lock.json
 ├── package.json
-├── tsconfig.json
-├── tsconfig.node.json
 ├── vercel.json
-├── vite.config.ts
+└── vite.config.ts
 ```
 
-## Getting Started
+## Prerequisites
+
+- Node.js
+- npm
+
+## Installation
 
 ```bash
 git clone https://github.com/Bannysukumar/Crypto-Exchange.git
@@ -65,28 +62,34 @@ npm install
 npm run dev
 ```
 
-Scripts defined in package.json:
+`npm run dev` starts Vite. `vite.config.ts` sets the dev server port to 3000.
 
-- `npm run dev` — `vite`
-- `npm run build` — `vite build`
-- `npm run lint` — `eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0`
+## Configuration
+
+Copy `env.example` to `.env`. That example names the Cashfree app settings and `VITE_API_BASE_URL`. Do not commit real keys. A `.env` file is already in the working tree on GitHub. Treat its values as secrets.
+
+## Usage
+
+Open the landing page, sign in through the auth flow, and use deposit, withdraw, send, and history. Admin withdrawal review is `src/pages/AdminWithdrawals.tsx`.
 
 ## API
 
-Endpoint files present in `api/`:
+Files in `api/`:
 
-- `api/create-order.js`
-- `api/health.js`
-- `api/history.js`
-- `api/order-status.js`
-- `api/test.js`
-- `api/transactions.js`
-- `api/users.js`
+- `create-order.js`
+- `order-status.js`
+- `transactions.js`
+- `users.js`
+- `history.js`
+- `health.js`
+
+## Smart Contract
+
+`src/config/contracts.ts` is the client contract configuration. This README does not publish a contract address.
 
 ## Deployment
 
-- vercel.json is in the repository root.
-- The repository homepage is https://crypto-exchange-ecru-chi.vercel.app.
+`vercel.json` sets the Vite build output to `dist` and rewrites `/api` requests. Homepage: https://crypto-exchange-ecru-chi.vercel.app.
 
 ## Contributing
 
@@ -98,8 +101,6 @@ Licensed under MIT. See [LICENSE](LICENSE).
 
 ## Author
 
-[Banny Sukumar](https://github.com/Bannysukumar)
+Banny Sukumar
 
-- GitHub: [@Bannysukumar](https://github.com/Bannysukumar)
-- Portfolio: [adepu-sukumar.vercel.app](https://adepu-sukumar.vercel.app/)
-- LinkedIn: [Adepu Sukumar](https://www.linkedin.com/in/adepu-sukumar-59b423351)
+GitHub: https://github.com/Bannysukumar
